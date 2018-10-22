@@ -92,16 +92,16 @@ var
   Image16Array: PImage16Array;
   TIFFinfo: TTIFFinfo;
   Images: Array[0..1000] of PImage16Array;
-  GPointsPosition:PIntegerArray;  //Pole bodù, které obsahuje pozice bodù, které leí v síti
+  GPointsPosition:PIntegerArray;  //Pole bodÃ¹, kterÃ© obsahuje pozice bodÃ¹, kterÃ© leÅ¾Ã­ v sÃ­ti
   GPointsKor,GLPixelData:Array of TList;
   GU,GSize,GHeader,Gn,Gwidth,Gheight,GPrahHodnota,GPolomer,GKrok:Integer;
-  GB2: array of PPoleWord;    //Obsahuje naètená data (obrazy)
-  GPruObraz: PPoleWord;      //Obsahuje zprùmìrovanı obraz z dat
-  //GDicVertex:TDictionary<integer,GPPointsRecordKor>; // slovník obsahující vrcholy interpolaèní sítì
-  AGDicVertex: array of TDictionary<integer,GPPointsRecordKor>; // slovník obsahující vrcholy interpolaèní sítì
+  GB2: array of PPoleWord;    //Obsahuje naÃ¨tenÃ¡ data (obrazy)
+  GPruObraz: PPoleWord;      //Obsahuje zprÃ¹mÃ¬rovanÃ½ obraz z dat
+  //GDicVertex:TDictionary<integer,GPPointsRecordKor>; // slovnÃ­k obsahujÃ­cÃ­ vrcholy interpolaÃ¨nÃ­ sÃ­tÃ¬
+  AGDicVertex: array of TDictionary<integer,GPPointsRecordKor>; // slovnÃ­k obsahujÃ­cÃ­ vrcholy interpolaÃ¨nÃ­ sÃ­tÃ¬
   GDicPosition:TDictionary<Integer,integer>;
   GDicBrightness:TDictionary<Integer,single>;
-  GArrayOfNames:array of string;//pole na názvy vstupních obrázkù
+  GArrayOfNames:array of string;//pole na nÃ¡zvy vstupnÃ­ch obrÃ¡zkÃ¹
   GNameOfFolder:string;
 implementation
 
@@ -117,10 +117,10 @@ begin
     Result := 0;                  (* Orientaion is neutral if result is 0  *)
 end;
 
-function CheckEdge(x1,x2,y1,y2,I,J:integer):boolean;   //zkontroluje, zda bod leí na hranici trojúhelníku
+function CheckEdge(x1,x2,y1,y2,I,J:integer):boolean;   //zkontroluje, zda bod leÅ¾Ã­ na hranici trojÃºhelnÃ­ku
 var a,b,c,d:Integer;
 begin
-  if x1>=x2 then//uspoøádáme I-té sloky podle velikosti
+  if x1>=x2 then//uspoÃ¸Ã¡dÃ¡me I-tÃ© sloÅ¾ky podle velikosti
     begin
       a:=x1; b:=x2;
     end
@@ -128,7 +128,7 @@ begin
     begin
       a:=x2; b:=x1;
     end;
-    if y1>=y2 then//uspoøádáme J-té sloky podle velikosti
+    if y1>=y2 then//uspoÃ¸Ã¡dÃ¡me J-tÃ© sloÅ¾ky podle velikosti
     begin
       c:= y1; d:=y2;
     end
@@ -136,19 +136,19 @@ begin
     begin
       c:=y2; d:=y1;
     end;
-  if ((b<=I) and (I<=a)) and ((d<=J) and (J<=c)) then result:=true//bod leí na pøímce mezi uzly trojúhelnkové sítì
+  if ((b<=I) and (I<=a)) and ((d<=J) and (J<=c)) then result:=true//bod leÅ¾Ã­ na pÃ¸Ã­mce mezi uzly trojÃºhelnkovÃ© sÃ­tÃ¬
   else result:=false;
 end;
 
-function Det2(J,I,x1,y1,x2,y2:Integer):boolean; //pro kontrolu, jestli bod leí na pøímce dvou bodù
+function Det2(J,I,x1,y1,x2,y2:Integer):boolean; //pro kontrolu, jestli bod leÅ¾Ã­ na pÃ¸Ã­mce dvou bodÃ¹
 var a:integer;
 begin
   a:=(J-x1) * (I-y2) - (I-y1) * (J-x2);
-  if (a=0) and (CheckEdge(y1,y2,x1,x2,I,J)) then result:= true//pokud a = 0, pak tyto tøi body leí na stejné pøímce, pokud CheckEdge=true, pak bod J,I leí na úseèce mezi zbylími dvìma body
+  if (a=0) and (CheckEdge(y1,y2,x1,x2,I,J)) then result:= true//pokud a = 0, pak tyto tÃ¸i body leÅ¾Ã­ na stejnÃ© pÃ¸Ã­mce, pokud CheckEdge=true, pak bod J,I leÅ¾Ã­ na ÃºseÃ¨ce mezi zbylÃ­mi dvÃ¬ma body
   else result:=false;
 end;
 
-function CheckPixel(I,J:integer; T:array of GPPointsRecordKor ):boolean;  //Ovìøí, jesti bod leí v trojúhelníku nebo na jeho hranici, pokud ano, vrátí true
+function CheckPixel(I,J:integer; T:array of GPPointsRecordKor ):boolean;  //OvÃ¬Ã¸Ã­, jesti bod leÅ¾Ã­ v trojÃºhelnÃ­ku nebo na jeho hranici, pokud ano, vrÃ¡tÃ­ true
 var  Or1, Or2, Or3: ShortInt;
 begin
   Or1    := Orientation(T[0]^.J, T[0]^.I, T[1]^.J, T[1]^.I, J,I);
@@ -166,14 +166,14 @@ begin
   end;
 end;
 
-function CheckFakeVertex(LFakeVertex:TList;I, J, R2,S2:integer):boolean;  //vrátí true, pokud jsme nalezli pixel nevhodnı k interpolaci, jinak vrátí false
+function CheckFakeVertex(LFakeVertex:TList;I, J, R2,S2:integer):boolean;  //vrÃ¡tÃ­ true, pokud jsme nalezli pixel nevhodnÃ½ k interpolaci, jinak vrÃ¡tÃ­ false
 var C:integer; F:boolean; FVertex:GPFVertex;
 begin
   F:=false;
-  for C:=0 to (LFakeVertex.Count-1) do      //projede list vrcholù nevhodnıch k interpolaci
+  for C:=0 to (LFakeVertex.Count-1) do      //projede list vrcholÃ¹ nevhodnÃ½ch k interpolaci
   begin
     FVertex:=LFakeVertex.Items[C];
-    if (FVertex^.I=I+R2) and (FVertex^.J=J+S2) then //pokud zjistím, e aktuální pixel je vrchol nevhodnı k interpolaci, pak F := false a pøejde se na další záznam v listu vrcholù
+    if (FVertex^.I=I+R2) and (FVertex^.J=J+S2) then //pokud zjistÃ­m, Å¾e aktuÃ¡lnÃ­ pixel je vrchol nevhodnÃ½ k interpolaci, pak F := false a pÃ¸ejde se na dalÅ¡Ã­ zÃ¡znam v listu vrcholÃ¹
     begin
       F:=true;
       break;
@@ -188,11 +188,11 @@ var I,J:Integer;
     max:Single;
     Grad:Array of Array of Single;
 begin
-  R:=Size div 2; //R je poèet pixelù v obraze, na jeden pixel pøipadají 2 bajty
-  SetLength(Grad,3);   //Definujeme matici o 3 øádcích
-  SetLength(Grad[0],R);//První øádek má R sloupcù, je to derivace podle x
-  SetLength(Grad[1],R);//Druhı øádek má R sloupcù, je to derivace podle y
-  SetLength(Grad[2],R);//Tøetí øádek má R sloupcù. je norma gradientu
+  R:=Size div 2; //R je poÃ¨et pixelÃ¹ v obraze, na jeden pixel pÃ¸ipadajÃ­ 2 bajty
+  SetLength(Grad,3);   //Definujeme matici o 3 Ã¸Ã¡dcÃ­ch
+  SetLength(Grad[0],R);//PrvnÃ­ Ã¸Ã¡dek mÃ¡ R sloupcÃ¹, je to derivace podle x
+  SetLength(Grad[1],R);//DruhÃ½ Ã¸Ã¡dek mÃ¡ R sloupcÃ¹, je to derivace podle y
+  SetLength(Grad[2],R);//TÃ¸etÃ­ Ã¸Ã¡dek mÃ¡ R sloupcÃ¹. je norma gradientu
   max:=0;
   for J:=0 to height-1 do
      begin
@@ -212,17 +212,17 @@ begin
                 if(J=0) then Grad[1,I+J*width]:=Data2^[(J+1)*width+I]-Data2^[J*width+I]
                 else Grad[1,I+J*width]:=Data2^[J*width+I]-Data2^[(J-1)*width+I];
             end;
-          //Vıpoèet Normy
+          //VÃ½poÃ¨et Normy
            Grad[2,I+J*width]:=sqrt(Grad[0,I+J*width]*Grad[0,I+J*width] + Grad[1,I+J*width]*Grad[1,I+J*width] );
            if Grad[2,I+J*width]>max then max:=Grad[2,I+J*width];
            Grad2^[J*width+I]:=Grad[2,I+J*width];
         end;
      end;
-    //SetLength(Grad,3);   //Definujeme matici o 3 øádcích
-    SetLength(Grad[0],0);//První øádek má R sloupcù, je to derivace podle x
-    SetLength(Grad[1],0);//Druhı øádek má R sloupcù, je to derivace podle y
-    SetLength(Grad[2],0);//Tøetí øádek má R sloupcù. je norma gradientu
-    SetLength(Grad,0);   //Definujeme matici o 3 øádcích
+    //SetLength(Grad,3);   //Definujeme matici o 3 Ã¸Ã¡dcÃ­ch
+    SetLength(Grad[0],0);//PrvnÃ­ Ã¸Ã¡dek mÃ¡ R sloupcÃ¹, je to derivace podle x
+    SetLength(Grad[1],0);//DruhÃ½ Ã¸Ã¡dek mÃ¡ R sloupcÃ¹, je to derivace podle y
+    SetLength(Grad[2],0);//TÃ¸etÃ­ Ã¸Ã¡dek mÃ¡ R sloupcÃ¹. je norma gradientu
+    SetLength(Grad,0);   //Definujeme matici o 3 Ã¸Ã¡dcÃ­ch
     result:=max;
 end;
 
@@ -279,13 +279,13 @@ begin
 end;
 
 function BiInterpolation(J,I:single;width,n:integer):word;
-var F1,F2,F3,F4:single;//dílèí interpolované hodnoty
-    a,b,c,d:integer;// souøadnice
+var F1,F2,F3,F4:single;//dÃ­lÃ¨Ã­ interpolovanÃ© hodnoty
+    a,b,c,d:integer;// souÃ¸adnice
 begin
   a:=Floor(J); b:=Ceil(J); c:=Floor(I); d:=Ceil(I);
   if (a=b) and (c=d) then result:=GB2[n]^[c*width+a]
-  else if (a=b) and (c<>d) then result:=word(round(GB2[n]^[c*width+a] + ((GB2[n]^[d*width+a]-GB2[n]^[c*width+a]) / (d-c) ) * (I-c))) //svislá interpolace
-  else if (a<>b) and (c=d) then result:=word(round(GB2[n]^[c*width+a] + ((GB2[n]^[c*width+b]-GB2[n]^[c*width+a]) / (b-a) ) * (J-a))) //vodorovná intepolace
+  else if (a=b) and (c<>d) then result:=word(round(GB2[n]^[c*width+a] + ((GB2[n]^[d*width+a]-GB2[n]^[c*width+a]) / (d-c) ) * (I-c))) //svislÃ¡ interpolace
+  else if (a<>b) and (c=d) then result:=word(round(GB2[n]^[c*width+a] + ((GB2[n]^[c*width+b]-GB2[n]^[c*width+a]) / (b-a) ) * (J-a))) //vodorovnÃ¡ intepolace
   else
   begin
     F1:=((b-J) / (b-a)) * ((d-I) / (d-c)) * GB2[n]^[c*width+a];
@@ -296,7 +296,7 @@ begin
   end;
 end;
 
-function Interpolation(J,I,x1,y1,x2,y2:Integer;z1,z2:single):single;Overload; //spoète interpolaci na pøímce
+function Interpolation(J,I,x1,y1,x2,y2:Integer;z1,z2:single):single;Overload; //spoÃ¨te interpolaci na pÃ¸Ã­mce
 var t:single;
 begin
   if (x2-x1)<>0 then
@@ -315,9 +315,9 @@ procedure SavePixel(I,J,width,n:integer; Triangle:array of GPPointsRecordKor; PP
 var smer:boolean;
 begin
   PPixel^.I:=I; PPixel^.J:=J; PPixel^.Position:=I*width+J;
-  Smer:=true; //pokud Smer =true, pak poèítej interpolaci pro posuv ve smìru I
+  Smer:=true; //pokud Smer =true, pak poÃ¨Ã­tej interpolaci pro posuv ve smÃ¬ru I
   PPixel^.PosunI:=Interpolation(I,J,Triangle,Smer);
-  Smer:=false; //pokud Smer =false, pak poèítej interpolaci pro posuv ve smìru J
+  Smer:=false; //pokud Smer =false, pak poÃ¨Ã­tej interpolaci pro posuv ve smÃ¬ru J
   PPixel^.PosunJ:=Interpolation(I,J,Triangle,Smer);
   GLPixeldata[n].Add(PPixel);
 end;
@@ -331,43 +331,43 @@ begin
   result:=true;
 end;
 
-function AritmetickyPrumer(r,I,J,width:integer):extended;  //vrátí aritmetickı prùmer hodnot pixelù v okolí uzlu
+function AritmetickyPrumer(r,I,J,width:integer):extended;  //vrÃ¡tÃ­ aritmetickÃ½ prÃ¹mer hodnot pixelÃ¹ v okolÃ­ uzlu
 var K,G1,G2,G3,G4,t:integer;
     Sumx,v:extended;
 begin
-  Sumx:=GPruObraz^[I*width+J]; //Zjistí jas uzlu sítì a pøidá jej do sumy, uzel leí ve zprùmìrovaném obraze
-  t:=3;v:=(2*r+1)*(2*r+1);//v je poèet pixelù v okolí uzlu sítì
-  for K:=1 to r do // Cyklus pro danı poèet krunic kolem uzlu, poèet krunic= polomìr nìjvìtší krunice tj. r
+  Sumx:=GPruObraz^[I*width+J]; //ZjistÃ­ jas uzlu sÃ­tÃ¬ a pÃ¸idÃ¡ jej do sumy, uzel leÅ¾Ã­ ve zprÃ¹mÃ¬rovanÃ©m obraze
+  t:=3;v:=(2*r+1)*(2*r+1);//v je poÃ¨et pixelÃ¹ v okolÃ­ uzlu sÃ­tÃ¬
+  for K:=1 to r do // Cyklus pro danÃ½ poÃ¨et kruÅ¾nic kolem uzlu, poÃ¨et kruÅ¾nic= polomÃ¬r nÃ¬jvÃ¬tÅ¡Ã­ kruÅ¾nice tj. r
     begin
-      if (K>1) then t:=t+2; //Nastaví novou délku sloupce, resp. øádku
-        for G1:=0 to (t-1) do //Projede spodní øádek
-          Sumx:=Sumx+GPruObraz^[(I+K)*width+(J-K+G1)];  //Pokud bod leí ve správném okolí pøiète se jeho hodnota jasu k sumì
-        for G2:=0 to (t-1) do //Projede horní øádek
-          Sumx:=Sumx+GPruObraz^[(I-K)*width+(J-K+G2)];  //Pokud bod leí ve správném okolí pøiète se jeho hodnota jasu k sumì
-        for G3:=1 to (t-2) do //Projede levı sloupec
-          Sumx:=Sumx+GPruObraz^[(I-K+G3)*width+(J-K)];  //Pokud bod leí ve správném okolí pøiète se jeho hodnota jasu k sumì
-        for G4:=1 to (t-2) do //Projede pravı sloupec
-          Sumx:=Sumx+GPruObraz^[(I-K+G4)*width+(J+K)];  //Pokud bod leí ve správném okolí pøiète se jeho hodnota jasu k sumì
+      if (K>1) then t:=t+2; //NastavÃ­ novou dÃ©lku sloupce, resp. Ã¸Ã¡dku
+        for G1:=0 to (t-1) do //Projede spodnÃ­ Ã¸Ã¡dek
+          Sumx:=Sumx+GPruObraz^[(I+K)*width+(J-K+G1)];  //Pokud bod leÅ¾Ã­ ve sprÃ¡vnÃ©m okolÃ­ pÃ¸iÃ¨te se jeho hodnota jasu k sumÃ¬
+        for G2:=0 to (t-1) do //Projede hornÃ­ Ã¸Ã¡dek
+          Sumx:=Sumx+GPruObraz^[(I-K)*width+(J-K+G2)];  //Pokud bod leÅ¾Ã­ ve sprÃ¡vnÃ©m okolÃ­ pÃ¸iÃ¨te se jeho hodnota jasu k sumÃ¬
+        for G3:=1 to (t-2) do //Projede levÃ½ sloupec
+          Sumx:=Sumx+GPruObraz^[(I-K+G3)*width+(J-K)];  //Pokud bod leÅ¾Ã­ ve sprÃ¡vnÃ©m okolÃ­ pÃ¸iÃ¨te se jeho hodnota jasu k sumÃ¬
+        for G4:=1 to (t-2) do //Projede pravÃ½ sloupec
+          Sumx:=Sumx+GPruObraz^[(I-K+G4)*width+(J+K)];  //Pokud bod leÅ¾Ã­ ve sprÃ¡vnÃ©m okolÃ­ pÃ¸iÃ¨te se jeho hodnota jasu k sumÃ¬
     end;
-  result:=Sumx/v;//Aritmetickı prùmìr pro PruObraz
+  result:=Sumx/v;//AritmetickÃ½ prÃ¹mÃ¬r pro PruObraz
 end;
 
 function SmerodatnaOdchylka(r,I,J,width:integer;Ax:extended):extended;
 var K,G1,G2,G3,G4,t,v:integer;
     Sx:extended;
 begin
-  t:=3;v:=(2*r+1)*(2*r+1);//v je poèet pixelù v okolí uzlu sítì
+  t:=3;v:=(2*r+1)*(2*r+1);//v je poÃ¨et pixelÃ¹ v okolÃ­ uzlu sÃ­tÃ¬
   Sx:=sqr(GPruObraz^[I*width+J]-Ax);
-  for K:=1 to r do // Cyklus pro danı poèet krunic kolem uzlu, poèet krunic= polomìr nìjvìtší krunice tj. r
+  for K:=1 to r do // Cyklus pro danÃ½ poÃ¨et kruÅ¾nic kolem uzlu, poÃ¨et kruÅ¾nic= polomÃ¬r nÃ¬jvÃ¬tÅ¡Ã­ kruÅ¾nice tj. r
     begin
-      if (K>1) then t:=t+2; //Nastaví novou délku sloupce, resp. øádku
-        for G1:=0 to (t-1) do //Projede spodní øádek
+      if (K>1) then t:=t+2; //NastavÃ­ novou dÃ©lku sloupce, resp. Ã¸Ã¡dku
+        for G1:=0 to (t-1) do //Projede spodnÃ­ Ã¸Ã¡dek
           Sx:=Sx+sqr(GPruObraz^[(I+K)*width+(J-K+G1)]-Ax);
-        for G2:=0 to (t-1) do //Projede horní øádek
+        for G2:=0 to (t-1) do //Projede hornÃ­ Ã¸Ã¡dek
           Sx:=Sx+sqr(GPruObraz^[(I-K)*width+(J-K+G2)]-Ax);
-        for G3:=1 to (t-2) do //Projede levı sloupec
+        for G3:=1 to (t-2) do //Projede levÃ½ sloupec
           Sx:=Sx+sqr(GPruObraz^[(I-K+G3)*width+(J-K)]-Ax);
-        for G4:=1 to (t-2) do //Projede pravı sloupec
+        for G4:=1 to (t-2) do //Projede pravÃ½ sloupec
           Sx:=Sx+sqr(GPruObraz^[(I-K+G4)*width+(J+K)]-Ax);
     end;
   Sx:=sqrt(Sx/(v-1));
@@ -379,43 +379,43 @@ var K,G1,G2,G3,G4,t:integer;
     Sy,Ay,Sumy,v:Extended;
     Korelac:single;
 begin
-  Sumy:=ObrP2^[(I+R2)*width+(J+S2)]; //Zjistí jas pixelu, kterı leí v okolí uzlu, tento pixel bereme z prvního obrázku v listboxu
-  t:=3;v:=(2*r+1)*(2*r+1);//v je poèet pixelù v okolí uzlu sítì
-  for K:=1 to r do // Cyklus pro danı poèet krunic kolem uzlu, poèet krunic= polomìr nìjvìtší krunice tj. r
+  Sumy:=ObrP2^[(I+R2)*width+(J+S2)]; //ZjistÃ­ jas pixelu, kterÃ½ leÅ¾Ã­ v okolÃ­ uzlu, tento pixel bereme z prvnÃ­ho obrÃ¡zku v listboxu
+  t:=3;v:=(2*r+1)*(2*r+1);//v je poÃ¨et pixelÃ¹ v okolÃ­ uzlu sÃ­tÃ¬
+  for K:=1 to r do // Cyklus pro danÃ½ poÃ¨et kruÅ¾nic kolem uzlu, poÃ¨et kruÅ¾nic= polomÃ¬r nÃ¬jvÃ¬tÅ¡Ã­ kruÅ¾nice tj. r
     begin
-      if (K>1) then t:=t+2; //Nastaví novou délku sloupce, resp. øádku
-        for G1:=0 to (t-1) do //Projede spodní øádek
+      if (K>1) then t:=t+2; //NastavÃ­ novou dÃ©lku sloupce, resp. Ã¸Ã¡dku
+        for G1:=0 to (t-1) do //Projede spodnÃ­ Ã¸Ã¡dek
           Sumy:=Sumy+ObrP2^[(I+R2+K)*width+(J+S2+G1-K)];
-        for G2:=0 to (t-1) do //Projede horní øádek
+        for G2:=0 to (t-1) do //Projede hornÃ­ Ã¸Ã¡dek
           Sumy:=Sumy+ObrP2^[(I+R2-K)*width+(J+S2+G2-K)];
-        for G3:=1 to (t-2) do //Projede levı sloupec
+        for G3:=1 to (t-2) do //Projede levÃ½ sloupec
           Sumy:=Sumy+ObrP2^[(I-K+G3+R2)*width+(J-K+S2)];
-        for G4:=1 to (t-2) do //Projede pravı sloupec
+        for G4:=1 to (t-2) do //Projede pravÃ½ sloupec
           Sumy:=Sumy+ObrP2^[(I-K+G4+R2)*width+(J+K+S2)];
     end;
-  Ay:=Sumy/v;//Aritmetickı prùmìr pro ObrP2
-  t:=3;//v je poèet pixelù v okolí uzlu sítì
+  Ay:=Sumy/v;//AritmetickÃ½ prÃ¹mÃ¬r pro ObrP2
+  t:=3;//v je poÃ¨et pixelÃ¹ v okolÃ­ uzlu sÃ­tÃ¬
   Sy:=sqr(ObrP2^[(I+R2)*width+(J+S2)]-Ay);
   Korelac:=(GPruObraz^[I*width+J]-Ax)*(ObrP2^[(I+R2)*width+(J+S2)]-Ay);
-  for K:=1 to r do // Cyklus pro danı poèet krunic kolem uzlu, poèet krunic= polomìr nìjvìtší krunice tj. r
+  for K:=1 to r do // Cyklus pro danÃ½ poÃ¨et kruÅ¾nic kolem uzlu, poÃ¨et kruÅ¾nic= polomÃ¬r nÃ¬jvÃ¬tÅ¡Ã­ kruÅ¾nice tj. r
     begin
-      if (K>1) then t:=t+2; //Nastaví novou délku sloupce, resp. øádku
-        for G1:=0 to (t-1) do //Projede spodní øádek
+      if (K>1) then t:=t+2; //NastavÃ­ novou dÃ©lku sloupce, resp. Ã¸Ã¡dku
+        for G1:=0 to (t-1) do //Projede spodnÃ­ Ã¸Ã¡dek
           begin
             Sy:=Sy+sqr(ObrP2^[(I+R2+K)*width+(J+S2+G1-K)]-Ay);
             Korelac:=Korelac+(GPruObraz^[(I+K)*width+(J-K+G1)]-Ax)*(ObrP2^[(I+R2+K)*width+(J+S2+G1-K)]-Ay);
           end;
-        for G2:=0 to (t-1) do //Projede horní øádek
+        for G2:=0 to (t-1) do //Projede hornÃ­ Ã¸Ã¡dek
           begin
             Sy:=Sy+sqr(ObrP2^[(I+R2-K)*width+(J+S2+G2-K)]-Ay);
             Korelac:=Korelac+(GPruObraz^[(I-K)*width+(J-K+G2)]-Ax)*(ObrP2^[(I+R2-K)*width+(J+S2+G2-K)]-Ay);
           end;
-        for G3:=1 to (t-2) do //Projede levı sloupec
+        for G3:=1 to (t-2) do //Projede levÃ½ sloupec
           begin
             Sy:=Sy+sqr(ObrP2^[(I-K+G3+R2)*width+(J-K+S2)]-Ay);
             Korelac:=Korelac+(GPruObraz^[(I-K+G3)*width+(J-K)]-Ax)*(ObrP2^[(I-K+G3+R2)*width+(J-K+S2)]-Ay);
           end;
-        for G4:=1 to (t-2) do //Projede pravı sloupec
+        for G4:=1 to (t-2) do //Projede pravÃ½ sloupec
           begin
             Sy:=Sy+sqr(ObrP2^[(I-K+G4+R2)*width+(J+K+S2)]-Ay);
             Korelac:=Korelac+(GPruObraz^[(I-K+G4)*width+(J+K)]-Ax)*(ObrP2^[(I-K+G4+R2)*width+(J+K+S2)]-Ay);
@@ -423,13 +423,13 @@ begin
     end;
   Sy:=sqrt(Sy/(v-1));
   if (Sx=0) or (Sy=0) then Korelac:=-1
-  else Korelac:=(Korelac/v)/(Sx*Sy);   //vısledná korelace mezi PruObar a ObrP2
-  if(Korelac>1) then showmessage('Korelace je vìtší ne 1: '+FloatToStr(Korelac) );
-  if(Korelac<-1) then showmessage('Korelace je menší ne -1: '+floattostr(Korelac)+#13#10+'....I='+inttostr(I)+', J='+inttostr(J)+', Pozice='+inttostr(I*width+J)+#13#10+'I+R2='+inttostr(I+R2)+', J+S2='+inttostr(J+S2)+', Pozice='+inttostr((I+R2)*width+J+S2) );
+  else Korelac:=(Korelac/v)/(Sx*Sy);   //vÃ½slednÃ¡ korelace mezi PruObar a ObrP2
+  if(Korelac>1) then showmessage('Korelace je vÃ¬tÅ¡Ã­ neÅ¾ 1: '+FloatToStr(Korelac) );
+  if(Korelac<-1) then showmessage('Korelace je menÅ¡Ã­ neÅ¾ -1: '+floattostr(Korelac)+#13#10+'....I='+inttostr(I)+', J='+inttostr(J)+', Pozice='+inttostr(I*width+J)+#13#10+'I+R2='+inttostr(I+R2)+', J+S2='+inttostr(J+S2)+', Pozice='+inttostr((I+R2)*width+J+S2) );
   result:=Korelac;
 end;
 
-//Bitmapa na prùmìr =================     1
+//Bitmapa na prÃ¹mÃ¬r =================     1
 procedure NewBitmap(width, height, n:integer; B: array of PPoleWord; Max: array of integer;Name:String);Overload;     // NewBitmap 1
 var Pixels:PRGBTripleArray;
     Bitmap:TBitmap;
@@ -475,7 +475,7 @@ begin
                pru:=pru+round((B[I]^[Y*width+X]/Max[I])*255);
               end;
             prumer:=round(pru/n);
-            Pr^[Y*width+X]:=prumer;   // V ukazateli Pr je uloen prùmìr (ve formátu tif) z naètenıch obrazù.
+            Pr^[Y*width+X]:=prumer;   // V ukazateli Pr je uloÅ¾en prÃ¹mÃ¬r (ve formÃ¡tu tif) z naÃ¨tenÃ½ch obrazÃ¹.
             Pixels[X].rgbtRed := prumer;
             Pixels[X].rgbtGreen := prumer;
             Pixels[X].rgbtBlue := prumer;
@@ -548,11 +548,11 @@ begin
                 Pixels[I].rgbtRed := Result;
               end;
           end;
-  Bitmap.SaveToFile(ExtractFilePath(ParamStr(0))+'\'+GNameOfFolder+'\'+'UpravenáData'+'\'+Name+'.bmp');
+  Bitmap.SaveToFile(ExtractFilePath(ParamStr(0))+'\'+GNameOfFolder+'\'+'UpravenÃ¡Data'+'\'+Name+'.bmp');
   Bitmap.Free;
 end;
-               //Bitmapa pro vykreslení sítì hran
-procedure NewBitmap(width,height,U:integer;max:Single;{;Brightness:PSingleArray;}{Positions:PIntegerArray}Name:string);OverLoad;  //U znaèí délku pole Positions a Brightness
+               //Bitmapa pro vykreslenÃ­ sÃ­tÃ¬ hran
+procedure NewBitmap(width,height,U:integer;max:Single;{;Brightness:PSingleArray;}{Positions:PIntegerArray}Name:string);OverLoad;  //U znaÃ¨Ã­ dÃ©lku pole Positions a Brightness
 var Pixels:PRGBTripleArray;
     Bitmap:TBitmap;
     J,I{K}:integer;
@@ -637,11 +637,11 @@ begin
                   end;
               end;
           end;
-  Bitmap.SaveToFile(ExtractFilePath(ParamStr(0))+GNameOfFolder+'\'+'SítTriangulace'+'_Krok_'+inttostr(GKrok)+'_Polomer_'+inttostr(GPolomer) +'_PH_'+inttostr(GPrahHodnota)+'_KrokPomSit_'+inttostr(e)+'_PolPomSit_'+inttostr(p)+'.bmp');
+  Bitmap.SaveToFile(ExtractFilePath(ParamStr(0))+GNameOfFolder+'\'+'SÃ­tTriangulace'+'_Krok_'+inttostr(GKrok)+'_Polomer_'+inttostr(GPolomer) +'_PH_'+inttostr(GPrahHodnota)+'_KrokPomSit_'+inttostr(e)+'_PolPomSit_'+inttostr(p)+'.bmp');
   Bitmap.Free;
 end;
 
-procedure NewPixel(PVertex,PPixel:GPPointsRecordKor);  //PVertex je pùvodní ukazatel, jeho hodnoty jsou zkopírovány do ukazatele PPixel
+procedure NewPixel(PVertex,PPixel:GPPointsRecordKor);  //PVertex je pÃ¹vodnÃ­ ukazatel, jehoÅ¾ hodnoty jsou zkopÃ­rovÃ¡ny do ukazatele PPixel
 begin
   PPixel^.I:= PVertex^.I; PPixel^.J:= PVertex^.J;
   PPixel^.PosunI:= PVertex^.PosunI; PPixel^.PosunJ:=PVertex^.PosunJ;
@@ -673,7 +673,7 @@ begin
                 Pixels[I].rgbtRed := P^.R;
               end;
           end;
-  Bitmap.SaveToFile(ExtractFilePath(ParamStr(0))+'\'+GNameOfFolder+'\'+'MapyPosuvù'+'\'+Name+'.bmp');
+  Bitmap.SaveToFile(ExtractFilePath(ParamStr(0))+'\'+GNameOfFolder+'\'+'MapyPosuvÃ¹'+'\'+Name+'.bmp');
   Bitmap.Free;
 end;
 
@@ -717,17 +717,17 @@ var PMoveVector:GPColors;
 begin
   x:=(Jas/MaxJas)*255;
   New(PMoveVector);
-  //R sloka
+  //R sloÅ¾ka
   if (arg<=60) or (arg>=300) then PMoveVector.R:=round(x)
   else if (arg>60) and (arg<120) then PMoveVector.R:=round(-(x/60)*arg+2*x)
   else if (arg>240) and (arg<300) then PMoveVector.R:=round((x/60)*arg-4*x)
   else PMoveVector.R:=0;
-  //G sloka
+  //G sloÅ¾ka
   if (arg>=0) and (arg<60) then PMoveVector.G:=round((x/60)*arg)
   else if (arg>180) and (arg<240) then PMoveVector.G:=round(-(x/60)*arg+4*x)
   else if (arg>=60) and (arg<=180) then PMoveVector.G:=round(x)
   else PMoveVector.G:=0;
-  //B sloka
+  //B sloÅ¾ka
   if (arg>120) and (arg<180) then PMoveVector.B:=round((x/60)*arg-2*x)
   else if (arg>300) and (arg<=359) then PMoveVector.B:=round(-(x/60)*arg+6*x)
   else if (arg>=180) and (arg<=300) then PMoveVector.B:=round(x)
@@ -739,12 +739,12 @@ var inside:boolean;
 begin
   if w=1 then
   begin
-    if Det2(J,I,Triangle[0]^.J,Triangle[0]^.I,Triangle[1]^.J,Triangle[1]^.I) then Inside:=Interpolation(I,J,width,w,Triangle) else Inside:=false; // ovìøíme, jestli bod leí na pøímce dané jeho dvìma nejblišími body
+    if Det2(J,I,Triangle[0]^.J,Triangle[0]^.I,Triangle[1]^.J,Triangle[1]^.I) then Inside:=Interpolation(I,J,width,w,Triangle) else Inside:=false; // ovÃ¬Ã¸Ã­me, jestli bod leÅ¾Ã­ na pÃ¸Ã­mce danÃ© jeho dvÃ¬ma nejbliÅ¾Å¡Ã­mi body
   end
   else if w=3 then
   begin
-    Inside :=CheckPixel(I,J,Triangle); //ovìøí, jestli pixel leí v trojúhelníku
-    if Inside= true then Inside:=Interpolation(I,J,width,w,Triangle); //pokud pixel neleí smau poslední vrchol, pokud pixel leí v trojúhelníku spoète jeho interpolaèní hodnotu
+    Inside :=CheckPixel(I,J,Triangle); //ovÃ¬Ã¸Ã­, jestli pixel leÅ¾Ã­ v trojÃºhelnÃ­ku
+    if Inside= true then Inside:=Interpolation(I,J,width,w,Triangle); //pokud pixel neleÅ¾Ã­ smaÅ¾u poslednÃ­ vrchol, pokud pixel leÅ¾Ã­ v trojÃºhelnÃ­ku spoÃ¨te jeho interpolaÃ¨nÃ­ hodnotu
   end;
   result:=Inside;
 end;}
@@ -756,7 +756,7 @@ begin
    begin
      if (re=0) then if (im>0) then fi:=90 else fi:=270;
      if (im=0) then if (re>0) then fi:= 0 else fi:=180;
-     if (re>0) and (im>0) then fi:=180*arctan(im/re)/pi; //arctan vrací vısledek v radiánech, proto je nutné pøevést do stupòù
+     if (re>0) and (im>0) then fi:=180*arctan(im/re)/pi; //arctan vracÃ­ vÃ½sledek v radiÃ¡nech, proto je nutnÃ© pÃ¸evÃ©st do stupÃ²Ã¹
      if (re>0) and (im<0) then fi:=180*arctan(im/re)/pi+360;
      if (re<0) and (im>0) then fi:=180*arctan(im/re)/pi+180;
      if (re<0) and (im<0) then fi:=180*arctan(im/re)/pi+180;
@@ -777,7 +777,7 @@ begin
   if ((TrystrToInt(E.Text,S)) and (S>0)and(E.Text[1]<>'0') )=true then begin E.Color:=clGreen;E.font.Color:=clWhite; end
   else
   begin
-    ShowMessage('Špatnı vstup. Vstupení parametr musí bıt pøirozené èíslo');
+    ShowMessage('Å patnÃ½ vstup. VstupenÃ­ parametr musÃ­ bÃ½t pÃ¸irozenÃ© Ã¨Ã­slo');
     E.Color:=clRed;
   end;
 end;
@@ -793,23 +793,23 @@ var J,I,J2,I2, FullSize,q,width, height,n,Size,Header,U,S,V:Integer;
     f:file of byte;
     txtFile:textFile;
     Name,path:string;
-    //Pro více záznamù
+    //Pro vÃ­ce zÃ¡znamÃ¹
     A: array of Thandle;
     B: array of PPoleWord;
     B2: array of PPoleWord;
     prumer:integer;
-    MaxJasPrumer, MaxJasHrany:single;     //Maximální hodnota jasu pixelu ve zprùmìrovaném obraze z obrazù hran
-    //Parametry sítì
-    r,e,t,H1,maxP,PrahovaHodnota,K,G1,G2,G3,G4:Integer;//r polomìr okolí bodu, e hustota sítì, maxP pozice pixelu s maximání jasem v okolí uzlu
-    P:TList; //List do kterého se pøidávají záznamy o pixelech tj. záznam PixelRecord pomocí pointeru PPixelRecord
-    PRecord,PRecord2:PPixelRecord;           //Ukazatel na záznam pixelu, kterı obsahuje pozici a jas pixelu
-    maxB:Single;                    //Aktuální nejvyšší hodnota jasu pixelu v okolí uzlu
-    PointsBrightness:PSingleArray; //Pole bodù obsahující jejich hodnotu jasu
+    MaxJasPrumer, MaxJasHrany:single;     //MaximÃ¡lnÃ­ hodnota jasu pixelu ve zprÃ¹mÃ¬rovanÃ©m obraze z obrazÃ¹ hran
+    //Parametry sÃ­tÃ¬
+    r,e,t,H1,maxP,PrahovaHodnota,K,G1,G2,G3,G4:Integer;//r polomÃ¬r okolÃ­ bodu, e hustota sÃ­tÃ¬, maxP pozice pixelu s maximÃ¡nÃ­ jasem v okolÃ­ uzlu
+    P:TList; //List do kterÃ©ho se pÃ¸idÃ¡vajÃ­ zÃ¡znamy o pixelech tj. zÃ¡znam PixelRecord pomocÃ­ pointeru PPixelRecord
+    PRecord,PRecord2:PPixelRecord;           //Ukazatel na zÃ¡znam pixelu, kterÃ½ obsahuje pozici a jas pixelu
+    maxB:Single;                    //AktuÃ¡lnÃ­ nejvyÅ¡Å¡Ã­ hodnota jasu pixelu v okolÃ­ uzlu
+    PointsBrightness:PSingleArray; //Pole bodÃ¹ obsahujÃ­cÃ­ jejich hodnotu jasu
     Ex:boolean;
 begin
   TvorbaSite.Enabled:=false; Korelace.Enabled:=true;
-  GDicPosition := TDictionary<integer,integer>.Create;  //vytvoøení slovníku pro pozice bodù v nich je poèítána korelace posuvu
-  GDicBrightness := TDictionary<integer,single>.Create; //vytvoøení slovníku pro jasy bodù v nich je poèítána korelace posuvu
+  GDicPosition := TDictionary<integer,integer>.Create;  //vytvoÃ¸enÃ­ slovnÃ­ku pro pozice bodÃ¹ v nichÅ¾ je poÃ¨Ã­tÃ¡na korelace posuvu
+  GDicBrightness := TDictionary<integer,single>.Create; //vytvoÃ¸enÃ­ slovnÃ­ku pro jasy bodÃ¹ v nichÅ¾ je poÃ¨Ã­tÃ¡na korelace posuvu
   SetEdit(true,Krok,Polomer,PrahHod,KrokPomSit,PolomerPomSit,MaxPol,PolomerKor,OkoliKorelace);
   if ((TryStrToInt(krok.Text,V)) and (TryStrToInt(Polomer.Text,V)) and (TryStrToInt(prahHod.Text,V)) and (TryStrToInt(krokPomSit.Text,V)) and (TryStrToInt(PolomerPomSit.Text,V)) and (TryStrToInt(MaxPol.Text,V)) and (TryStrToInt(PolomerKor.Text,V)) and (TryStrToInt(OkoliKorelace.Text,V)))=true  then
   begin
@@ -822,7 +822,7 @@ begin
     else
     begin
     SetEdit(False,Krok,Polomer,PrahHod,KrokPomSit,PolomerPomSit,MaxPol,PolomerKor,OkoliKorelace);
-    showmessage('Špatné vstupní parametry. Vstupní hodnoty musí bıt pøirozená èísla!'); Exit;
+    showmessage('Å patnÃ© vstupnÃ­ parametry. VstupnÃ­ hodnoty musÃ­ bÃ½t pÃ¸irozenÃ¡ Ã¨Ã­sla!'); Exit;
     end;
   end
   else
@@ -830,7 +830,7 @@ begin
   Krok.readonly:=False; Polomer.readonly:=False;PrahHod.readonly:=False;
   KrokPomSit.readonly:=False; PolomerPomSit.readonly:=False; MaxPol.readonly:=False;
   PolomerKor.readonly:=False;OkoliKorelace.readonly:=False;
-  showmessage('Špatné vstupní parametry. Vstupní hodnoty musí bıt pøirozená èísla!'); Exit;
+  showmessage('Å patnÃ© vstupnÃ­ parametry. VstupnÃ­ hodnoty musÃ­ bÃ½t pÃ¸irozenÃ¡ Ã¨Ã­sla!'); Exit;
   end;
   path:= ExtractFilePath(ParamStr(0));
   SetCurrentDir(path);
@@ -838,46 +838,46 @@ begin
   while Ex=true do
   begin
     Inc(S);
-    Ex:=directoryexists('Vısledky'+inttostr(S));
+    Ex:=directoryexists('VÃ½sledky'+inttostr(S));
   end;
   SetCurrentDir(ExtractFileDir(FileListBox1.FileName));
-  GNameOfFolder:='Vısledky'+inttostr(S);
+  GNameOfFolder:='VÃ½sledky'+inttostr(S);
   CreateDir(ExtractFilePath(ParamStr(0))+GNameOfFolder);
   AssignFile(txtFile,path+GNameOfFolder+'\'+'ParametryInfo.txt');
   ReWrite(txtFile);
-  WriteLn(txtFile,'                 Informace o nastavenıch parametrech');
+  WriteLn(txtFile,'                 Informace o nastavenÃ½ch parametrech');
   WriteLn(txtFile,'--------------------------------------------------');
-  WriteLn(txtFile,'   Parametry pro tvorbu sítì');
+  WriteLn(txtFile,'   Parametry pro tvorbu sÃ­tÃ¬');
   WriteLn(txtFile,'     Krok = '+Krok.Text);
-  WriteLn(txtFile,'     Polomìr = '+polomer.Text);
-  WriteLn(txtFile,'     Prahová hodnota jasu = '+PrahHod.Text);
+  WriteLn(txtFile,'     PolomÃ¬r = '+polomer.Text);
+  WriteLn(txtFile,'     PrahovÃ¡ hodnota jasu = '+PrahHod.Text);
   WriteLn(txtFile,'--------------------------------------------------');
-  WriteLn(txtFile,'   Parametry pro tvorbu pomocné sítì');
-  WriteLn(txtFile,'     Krok v pomocné síti = '+KrokPomSit.Text);
-  WriteLn(txtFile,'     Polomìr v pomocné síti = '+PolomerPomSit.Text);
-  WriteLn(txtFile,'     Maximální polomìr okolí interpolace = '+MaxPol.Text);
+  WriteLn(txtFile,'   Parametry pro tvorbu pomocnÃ© sÃ­tÃ¬');
+  WriteLn(txtFile,'     Krok v pomocnÃ© sÃ­ti = '+KrokPomSit.Text);
+  WriteLn(txtFile,'     PolomÃ¬r v pomocnÃ© sÃ­ti = '+PolomerPomSit.Text);
+  WriteLn(txtFile,'     MaximÃ¡lnÃ­ polomÃ¬r okolÃ­ interpolace = '+MaxPol.Text);
   WriteLn(txtFile,'--------------------------------------------------');
-  WriteLn(txtFile,'   Parametry na vıpoèet korelace');
-  WriteLn(txtFile,'     Polomìr v okolí uzlu = '+PolomerKor.Text);
-  WriteLn(txtFile,'     Polomìr okolí na vıpoèet korelace = '+OkoliKorelace.Text);
+  WriteLn(txtFile,'   Parametry na vÃ½poÃ¨et korelace');
+  WriteLn(txtFile,'     PolomÃ¬r v okolÃ­ uzlu = '+PolomerKor.Text);
+  WriteLn(txtFile,'     PolomÃ¬r okolÃ­ na vÃ½poÃ¨et korelace = '+OkoliKorelace.Text);
   WriteLn(txtFile,'--------------------------------------------------');
-  WriteLn(txtFile,'   Vstupní data');
+  WriteLn(txtFile,'   VstupnÃ­ data');
   width:=0;height:=0;FullSize:=0;
-  n:=0; //n znaèí poèet vybranıch obrázkù
-  for J := 0 to FileListBox1.Count-1 do     //Zjistí kolik poloek z filelistboxu je vybranıch
+  n:=0; //n znaÃ¨Ã­ poÃ¨et vybranÃ½ch obrÃ¡zkÃ¹
+  for J := 0 to FileListBox1.Count-1 do     //ZjistÃ­ kolik poloÅ¾ek z filelistboxu je vybranÃ½ch
      if FileListBox1.Selected[J] then
      begin
      if n=0 then
        begin
         if (EndsText('.tif',extractfilename(FileListBox1.FileName)))=false then
         begin
-          Showmessage('Špatná vstupní data. Data musejí bıt ve formátu .tif.');
+          Showmessage('Å patnÃ¡ vstupnÃ­ data. Data musejÃ­ bÃ½t ve formÃ¡tu .tif.');
           ShellExecute(Handle, nil, PChar(Application.ExeName), nil, nil, SW_SHOWNORMAL);
           Close;
           Exit;
         end;
         AssignFile(f, FileListBox1.FileName);
-        FileMode := fmOpenRead;    //Nutnı kus kódu, bez kterého by nastal I/O error 32 .... nemazat
+        FileMode := fmOpenRead;    //NutnÃ½ kus kÃ³du, bez kterÃ©ho by nastal I/O error 32 .... nemazat
         Reset(f);
         FullSize:=filesize(f); //2885814;
         closefile(f);
@@ -889,34 +889,34 @@ begin
      n:=n+1;
      end;
   Size:=width*height*2;
-  Header:=FullSize-Size; //Pouívej pro celı obraz
-  //Header:=FullSize-Size+width*838*2; //pouívej pro podmnoinu obrazu
-  //height:=200; // pro podmnoinu dat, sma to pokud chceš celı obraz
+  Header:=FullSize-Size; //PouÅ¾Ã­vej pro celÃ½ obraz
+  //Header:=FullSize-Size+width*838*2; //pouÅ¾Ã­vej pro podmnoÅ¾inu obrazu
+  //height:=200; // pro podmnoÅ¾inu dat, smaÅ¾ to pokud chceÅ¡ celÃ½ obraz
   GSize:=Size;
-  GHeader:=header; //pro naètení celého obrazu
-  //GHeader:=header+width*838*2; // pro podmnoinu obrazu
+  GHeader:=header; //pro naÃ¨tenÃ­ celÃ©ho obrazu
+  //GHeader:=header+width*838*2; // pro podmnoÅ¾inu obrazu
   Gn:=n; Gwidth:=width; Gheight:=height;//height;
-  // R:=Size div 2; //  R je poèet pixelù v obraze, na 1 pixel pøipadají 2 Bajty
+  // R:=Size div 2; //  R je poÃ¨et pixelÃ¹ v obraze, na 1 pixel pÃ¸ipadajÃ­ 2 Bajty
   SetLength(A,n); SetLength(B,n); SetLength(B2,n);{SetLength(GradP,n);}SetLength(GB2,n);
   SetLength(GArrayOfNames,0);
-  SetLength(GArrayOfNames,n);//Nastaví velikost polí na poèet vybranıch poloek
+  SetLength(GArrayOfNames,n);//NastavÃ­ velikost polÃ­ na poÃ¨et vybranÃ½ch poloÅ¾ek
   q:=0;
-  for I := 0 to FileListBox1.Count-1 do //Zaplní pole A handly na vybrané soubory a pole B ukazateli na pøíslušné adresy pamìti, které danım handlùm pøísluší
+  for I := 0 to FileListBox1.Count-1 do //ZaplnÃ­ pole A handly na vybranÃ© soubory a pole B ukazateli na pÃ¸Ã­sluÅ¡nÃ© adresy pamÃ¬ti, kterÃ© danÃ½m handlÃ¹m pÃ¸Ã­sluÅ¡Ã­
     begin
       if FileListBox1.Selected[I] then
         begin
           if (EndsText('.tif',extractfilename(FileListBox1.FileName)))=false then
           begin
-            Showmessage('Špatná vstupní data. Data musejí bıt ve formátu .tif.');
+            Showmessage('Å patnÃ¡ vstupnÃ­ data. Data musejÃ­ bÃ½t ve formÃ¡tu .tif.');
             ShellExecute(Handle, nil, PChar(Application.ExeName), nil, nil, SW_SHOWNORMAL);
             Close;
             Exit;
           end;
           GetMem(B[q],Size); GetMem(B2[q],Size); {GetMem(GradP[q], width*height*4);} GetMem(GB2[q],Size);
           A[q]:=FileOpen(FileListBox1.Items[I],fmOpenRead);
-          FileSeek(A[q],Header,0);// Z souboru pod hnadlem H pøeskoèí pøíslušnı poèet bajtù udanıch v Headeru. Èíslo 0 znaèí, e se tento poèet dat pøeskoèí od zaèátku souboru
-          FileRead(A[q],B[q]^,Size);//Ze souboru pod handlem A[q] naèti poèet bajtù udanıch promìnnou Size do bufferu B2[q]^
-          Move(B[q]^,B2[q]^,size);//Zkopíruje originální data do nového pole B2[q]^
+          FileSeek(A[q],Header,0);// Z souboru pod hnadlem H pÃ¸eskoÃ¨Ã­ pÃ¸Ã­sluÅ¡nÃ½ poÃ¨et bajtÃ¹ udanÃ½ch v Headeru. ÃˆÃ­slo 0 znaÃ¨Ã­, Å¾e se tento poÃ¨et dat pÃ¸eskoÃ¨Ã­ od zaÃ¨Ã¡tku souboru
+          FileRead(A[q],B[q]^,Size);//Ze souboru pod handlem A[q] naÃ¨ti poÃ¨et bajtÃ¹ udanÃ½ch promÃ¬nnou Size do bufferu B2[q]^
+          Move(B[q]^,B2[q]^,size);//ZkopÃ­ruje originÃ¡lnÃ­ data do novÃ©ho pole B2[q]^
           Move(B2[q]^,GB2[q]^,size);
           GArrayOfNames[q]:=extractfilename(FileListBox1.Items[I]);
           WriteLn(txtFile,    GArrayOfNames[q]);
@@ -924,9 +924,9 @@ begin
         end;
     end;
   CloseFile(txtFile);
-    //Vypoèítání prùmìrného obrazu z obrazù hran a uloí jej do ukazatele Grad
+    //VypoÃ¨Ã­tÃ¡nÃ­ prÃ¹mÃ¬rnÃ©ho obrazu z obrazÃ¹ hran a uloÅ¾Ã­ jej do ukazatele Grad
   GetMem(Grad, width*height*4); GetMem(GPruObraz,Size);
-  MaxJasPrumer:=0;                      //MaxJ = Maximální jas pixelu ve zprùmìrovaném obraze hran
+  MaxJasPrumer:=0;                      //MaxJ = MaximÃ¡lnÃ­ jas pixelu ve zprÃ¹mÃ¬rovanÃ©m obraze hran
   for I:=0 to (height-1) do
     begin
       for J:=0 to (width-1) do
@@ -936,16 +936,16 @@ begin
           begin
             prumer:=prumer+B2[K]^[I*width+J];
           end;
-        GPruObraz[I*width+J]:=round((prumer/n)); // prùmìrnı jas pixelu [I*width+J] ve zprùmìrovaném obraze
-        if(GPruObraz[I*width+J]>MaxJasPrumer) then MaxJasPrumer:=GPruObraz[I*width+J]; //Zjistí maximální jas pixelu ve zprùmìrovaném obraze
+        GPruObraz[I*width+J]:=round((prumer/n)); // prÃ¹mÃ¬rnÃ½ jas pixelu [I*width+J] ve zprÃ¹mÃ¬rovanÃ©m obraze
+        if(GPruObraz[I*width+J]>MaxJasPrumer) then MaxJasPrumer:=GPruObraz[I*width+J]; //ZjistÃ­ maximÃ¡lnÃ­ jas pixelu ve zprÃ¹mÃ¬rovanÃ©m obraze
       end;
     end;
   if (n>1) then NewBitmap(width,height,MaxJasPrumer,GPruObraz,'ZprumerovanyObraz');
-    //Ve zprùmìrovaném obrazu najdu hrany
-  MaxJasHrany:=Gradient(height,width,Size,GPruObraz,Grad); // Ze zprùmìrovaného obrazu v GPruObraz se napoèítají hrany a ty jsou pak uloeny do Grad
-  NewBitmap(width,height,MaxJasHrany,Grad,'Hrany_ZprumerovanyObraz');   //Uloí data v Grad jako bmp
-    //Tvorba sítì
-  //e = krok v síti, r = polomìr okolí, t = urèuje délku øádku a sloupce v kadém okolí (nemìnit!!!), PrahovaHodnota = urèuje minimální jas pixelu, k tomu, aby byl vybrán jako prvek sítì
+    //Ve zprÃ¹mÃ¬rovanÃ©m obrazu najdu hrany
+  MaxJasHrany:=Gradient(height,width,Size,GPruObraz,Grad); // Ze zprÃ¹mÃ¬rovanÃ©ho obrazu v GPruObraz se napoÃ¨Ã­tajÃ­ hrany a ty jsou pak uloÅ¾eny do Grad
+  NewBitmap(width,height,MaxJasHrany,Grad,'Hrany_ZprumerovanyObraz');   //UloÅ¾Ã­ data v Grad jako bmp
+    //Tvorba sÃ­tÃ¬
+  //e = krok v sÃ­ti, r = polomÃ¬r okolÃ­, t = urÃ¨uje dÃ©lku Ã¸Ã¡dku a sloupce v kaÅ¾dÃ©m okolÃ­ (nemÃ¬nit!!!), PrahovaHodnota = urÃ¨uje minimÃ¡lnÃ­ jas pixelu, k tomu, aby byl vybrÃ¡n jako prvek sÃ­tÃ¬
   e:=strtoint(Krok.Text); r:=strtoint(Polomer.Text);PrahovaHodnota:=strtoint(PrahHod.Text);
   GKrok:=e; GPolomer:=r;GPrahHodnota:=PrahovaHodnota;
   P := TList.Create;
@@ -961,66 +961,66 @@ begin
       for J:=0 to((width-1) div e) do
         begin
           J2:=J*e;
-          if (Grad^[I2*width+J2]>PrahovaHodnota) then //Pokud má uzel jas vìtší, ne je prahová hodnota
+          if (Grad^[I2*width+J2]>PrahovaHodnota) then //Pokud mÃ¡ uzel jas vÃ¬tÅ¡Ã­, neÅ¾ je prahovÃ¡ hodnota
             begin
               New(PRecord);
               PRecord^.Position:=I2*width+J2;
               PRecord^.Brightness:=Grad^[I2*width+J2];
               P.Add(PRecord);
             end
-          else //Nemá-li uzel jas vìtší ne prahová hodnota, hledáme v jeho okolí
+          else //NemÃ¡-li uzel jas vÃ¬tÅ¡Ã­ neÅ¾ prahovÃ¡ hodnota, hledÃ¡me v jeho okolÃ­
             begin
               t:=3;
-              for K:=1 to r do // Cyklus pro danı poèet krunic kolem uzlu, poèet krunic= polomìr nìjvìtší krunice tj. r
+              for K:=1 to r do // Cyklus pro danÃ½ poÃ¨et kruÅ¾nic kolem uzlu, poÃ¨et kruÅ¾nic= polomÃ¬r nÃ¬jvÃ¬tÅ¡Ã­ kruÅ¾nice tj. r
                 begin
                     maxB:=PrahovaHodnota;
-                    if (K>1) then t:=t+2; //Nastaví novou délku sloupce, resp. øádku
+                    if (K>1) then t:=t+2; //NastavÃ­ novou dÃ©lku sloupce, resp. Ã¸Ã¡dku
                     H1:=-K;
-                    for G1:=0 to (t-1) do //Projede spodní øádek
+                    for G1:=0 to (t-1) do //Projede spodnÃ­ Ã¸Ã¡dek
                       begin
-                        if(J2+H1+G1<0) or (J2+H1+G1>(width-1)) or ((I2+K)*width>(height-1)) then//Podmínka, jeslti bod v okolí uzlu leí v obrazu v platném sloupci a øádku
-                        else   //Pokud bod leí ve správném okolí
+                        if(J2+H1+G1<0) or (J2+H1+G1>(width-1)) or ((I2+K)*width>(height-1)) then//PodmÃ­nka, jeslti bod v okolÃ­ uzlu leÅ¾Ã­ v obrazu v platnÃ©m sloupci a Ã¸Ã¡dku
+                        else   //Pokud bod leÅ¾Ã­ ve sprÃ¡vnÃ©m okolÃ­
                           begin
                             if(Grad^[(I2+K)*width+(J2+H1+G1)]>maxB) then
                               begin
-                                maxB:= Grad^[(I2+K)*width+(J2+H1+G1)] ;  //Hodnota maximální jasu ve spodním øádku
-                                maxP:= (I2+K)*width+(J2+H1+G1);          //Pozice pixelu s maximálním jasem ve spodním øádku
+                                maxB:= Grad^[(I2+K)*width+(J2+H1+G1)] ;  //Hodnota maximÃ¡lnÃ­ jasu ve spodnÃ­m Ã¸Ã¡dku
+                                maxP:= (I2+K)*width+(J2+H1+G1);          //Pozice pixelu s maximÃ¡lnÃ­m jasem ve spodnÃ­m Ã¸Ã¡dku
                               end;
                           end;
                       end;
-                    for G2:=0 to (t-1) do //Projede horní øádek
+                    for G2:=0 to (t-1) do //Projede hornÃ­ Ã¸Ã¡dek
                       begin
-                          if(J2+H1+G2<0) or (J2+H1+G2>(width-1)) or ((I2-K)*width<0) then//Podmínka, jeslti bod v okolí uzlu leí v obrazu v platném sloupci a øádku
-                        else   //Pokud bod leí ve správném okolí
+                          if(J2+H1+G2<0) or (J2+H1+G2>(width-1)) or ((I2-K)*width<0) then//PodmÃ­nka, jeslti bod v okolÃ­ uzlu leÅ¾Ã­ v obrazu v platnÃ©m sloupci a Ã¸Ã¡dku
+                        else   //Pokud bod leÅ¾Ã­ ve sprÃ¡vnÃ©m okolÃ­
                           begin
                             if(Grad^[(I2-K)*width+(J2+H1+G2)]>maxB) then
                               begin
-                                maxB:= Grad^[(I2-K)*width+(J2+H1+G2)] ;  //Hodnota maximální jasu v horním øádku
-                                maxP:= (I2-K)*width+(J2+H1+G2);          //Pozice pixelu s maximálním jasem v horním øádku
+                                maxB:= Grad^[(I2-K)*width+(J2+H1+G2)] ;  //Hodnota maximÃ¡lnÃ­ jasu v hornÃ­m Ã¸Ã¡dku
+                                maxP:= (I2-K)*width+(J2+H1+G2);          //Pozice pixelu s maximÃ¡lnÃ­m jasem v hornÃ­m Ã¸Ã¡dku
                               end;
                           end;
                       end;
-                    for G3:=1 to (t-2) do //Projede levı sloupec
+                    for G3:=1 to (t-2) do //Projede levÃ½ sloupec
                       begin
-                        if(J2-K<0) or ((I2-K+G3)*width<0) or ((I2-K+G3)*width>(height-1)) then//Podmínka, jestli bod v okolí uzlu leí v obrazu v platném sloupci a øádku
-                        else      //Pokud bod leí ve správném okolí
+                        if(J2-K<0) or ((I2-K+G3)*width<0) or ((I2-K+G3)*width>(height-1)) then//PodmÃ­nka, jestli bod v okolÃ­ uzlu leÅ¾Ã­ v obrazu v platnÃ©m sloupci a Ã¸Ã¡dku
+                        else      //Pokud bod leÅ¾Ã­ ve sprÃ¡vnÃ©m okolÃ­
                           begin
                             if(Grad^[(I2-K+G3)*width+(J2-K)]>maxB) then
                               begin
-                                 maxB:=Grad^[(I2-K+G3)*width+(J2-K)];   //Hodnota maximální jasu v levém sloupci
-                                 maxP:=(I2-K+G3)*width+(J2-K);         //Pozice pixelu s maximálním jasem v levém sloupci
+                                 maxB:=Grad^[(I2-K+G3)*width+(J2-K)];   //Hodnota maximÃ¡lnÃ­ jasu v levÃ©m sloupci
+                                 maxP:=(I2-K+G3)*width+(J2-K);         //Pozice pixelu s maximÃ¡lnÃ­m jasem v levÃ©m sloupci
                               end;
                           end;
                       end;
-                    for G4:=1 to (t-2) do //Projede pravı sloupec
+                    for G4:=1 to (t-2) do //Projede pravÃ½ sloupec
                       begin
-                        if (J2+K>(width-1)) or ((I2-K+G4)*width<0) or ((I2-K+G4)*width>(height-1))then//Podmínka, jestli bod v okolí uzlu leí v obrazu v platném sloupci a øádku
-                        else     //Pokud bod leí ve správném okolí
+                        if (J2+K>(width-1)) or ((I2-K+G4)*width<0) or ((I2-K+G4)*width>(height-1))then//PodmÃ­nka, jestli bod v okolÃ­ uzlu leÅ¾Ã­ v obrazu v platnÃ©m sloupci a Ã¸Ã¡dku
+                        else     //Pokud bod leÅ¾Ã­ ve sprÃ¡vnÃ©m okolÃ­
                           begin
                             if(Grad^[(I2-K+G4)*width+(J2+K)]>maxB)then
                               begin
-                                 maxB:=Grad^[(I2-K+G4)*width+(J2+K)];   //Hodnota maximální jasu v pravém sloupci
-                                 maxP:=(I2-K+G4)*width+(J2+K);         //Pozice pixelu s maximálním jasem v pravém sloupci
+                                 maxB:=Grad^[(I2-K+G4)*width+(J2+K)];   //Hodnota maximÃ¡lnÃ­ jasu v pravÃ©m sloupci
+                                 maxP:=(I2-K+G4)*width+(J2+K);         //Pozice pixelu s maximÃ¡lnÃ­m jasem v pravÃ©m sloupci
                               end;
                           end;
                       end;
@@ -1040,34 +1040,34 @@ begin
   U:=P.Count;
   for I:=0 to (U-1) do
   begin
-    PRecord:=P.Items[I];     //Do PRecord vloí I. záznam
+    PRecord:=P.Items[I];     //Do PRecord vloÅ¾Ã­ I. zÃ¡znam
     if GDicPosition.ContainsKey(PRecord^.Position)=false then
     begin
       GDicPosition.Add(PRecord^.Position,PRecord^.Position);
       GDicBrightness.Add(PRecord^.Position,PRecord^.Brightness);
     end;
   end;
-    U:= GDicPosition.count; GU:=U;  //U = Poèet nalezenıch bodù, po odstranìní duplicitních záznamù
-    //Uloení do bitmapy
-  Name:=extractfilename(FileListBox1.FileName); //Do Name se uloí název obrázku
-  delete(Name,Length(Name)-3,4);  //Z Name se oddstraní poslední 4 znaky tj. .tif
-  if (n=1) then  NewBitmap(width,height,U,MaxJasPrumer{PointsBrightness}{GPointsPosition},'SítZHran_Krok_'+inttostr(e)+'_polomer_'+inttostr(r)+'_PH_'+inttostr(PrahovaHodnota)+'_'+Name) //Uloí sí do bitmapy a pøipojí název obrázku
-  else NewBitmap(width,height,U,MaxJasHrany{,PointsBrightness]{GPointsPosition},'SítZHran_Krok_'+inttostr(e)+'_polomer_'+inttostr(r)+'_PH_'+inttostr(PrahovaHodnota)); //Uloí sí ze zprùmìrovaného obrázku do bitmapy
-    //Uvolnìní pamìti
-  FreeMem(Grad); GDicBrightness.Clear; GDicBrightness.Destroy; //FreeMem(PointsBrightness,U*4); //FreeMem(PointsPosition); //Uvolní zabranou pamì
+    U:= GDicPosition.count; GU:=U;  //U = PoÃ¨et nalezenÃ½ch bodÃ¹, po odstranÃ¬nÃ­ duplicitnÃ­ch zÃ¡znamÃ¹
+    //UloÅ¾enÃ­ do bitmapy
+  Name:=extractfilename(FileListBox1.FileName); //Do Name se uloÅ¾Ã­ nÃ¡zev obrÃ¡zku
+  delete(Name,Length(Name)-3,4);  //Z Name se oddstranÃ­ poslednÃ­ 4 znaky tj. .tif
+  if (n=1) then  NewBitmap(width,height,U,MaxJasPrumer{PointsBrightness}{GPointsPosition},'SÃ­tZHran_Krok_'+inttostr(e)+'_polomer_'+inttostr(r)+'_PH_'+inttostr(PrahovaHodnota)+'_'+Name) //UloÅ¾Ã­ sÃ­Â do bitmapy a pÃ¸ipojÃ­ nÃ¡zev obrÃ¡zku
+  else NewBitmap(width,height,U,MaxJasHrany{,PointsBrightness]{GPointsPosition},'SÃ­tZHran_Krok_'+inttostr(e)+'_polomer_'+inttostr(r)+'_PH_'+inttostr(PrahovaHodnota)); //UloÅ¾Ã­ sÃ­Â ze zprÃ¹mÃ¬rovanÃ©ho obrÃ¡zku do bitmapy
+    //UvolnÃ¬nÃ­ pamÃ¬ti
+  FreeMem(Grad); GDicBrightness.Clear; GDicBrightness.Destroy; //FreeMem(PointsBrightness,U*4); //FreeMem(PointsPosition); //UvolnÃ­ zabranou pamÃ¬Â
   for I := 0 to (U - 1) do
   begin
     PRecord := P.Items[I];
-    Dispose(PRecord);   //Uvolní jednotlivé záznamy
+    Dispose(PRecord);   //UvolnÃ­ jednotlivÃ© zÃ¡znamy
   end;
-  P.Free;   //Uvolní list P
-  for I:=0 to (n-1) do//Uvolní jednotlivé buffery, n je poèet vybranıch obrázkù
+  P.Free;   //UvolnÃ­ list P
+  for I:=0 to (n-1) do//UvolnÃ­ jednotlivÃ© buffery, n je poÃ¨et vybranÃ½ch obrÃ¡zkÃ¹
   begin
     FreeMem(B[I]);FreeMem(B2[I]);
     fileclose(A[I]);
   end;
   setlength(A,0); setlength(B,0); setlength(B2,0);
-  showmessage('Sí dokonèena.');
+  showmessage('SÃ­Â dokonÃ¨ena.');
  // ReportMemoryLeaksOnShutdown := True;
 end;
 
@@ -1080,16 +1080,16 @@ var J,I,J2,I2,L,FullSize,q,width,height,U,Header,Size, BodI, BodJ,b,G:Integer;
     LUzly,Lbody:Tlist;
     PRecordU,PRecordB:PPointsRecord;
     MaxKorelace,KorelaceR:single;
-    ObrP2 : PPoleWord; //Obraz = Data prvního obrazu v listboxu, ke kterému poèítáme korelaci, ObrP = Obraz
-    //Parametry sítì
-    Ax,Sx:extended;//Ax=aritmetickı prùmìr hodnot pixelù leících v okolí uzlu, Sx=smìrodatná odchylka hodnot pixelù v okolí uzlu sítì
-    r,Rk,a,e,t,H1,K,G1,G2,G3,G4:Integer;//r polomìr okolí bodu, e hustota sítì,
+    ObrP2 : PPoleWord; //Obraz = Data prvnÃ­ho obrazu v listboxu, ke kterÃ©mu poÃ¨Ã­tÃ¡me korelaci, ObrP = Obraz
+    //Parametry sÃ­tÃ¬
+    Ax,Sx:extended;//Ax=aritmetickÃ½ prÃ¹mÃ¬r hodnot pixelÃ¹ leÅ¾Ã­cÃ­ch v okolÃ­ uzlu, Sx=smÃ¬rodatnÃ¡ odchylka hodnot pixelÃ¹ v okolÃ­ uzlu sÃ­tÃ¬
+    r,Rk,a,e,t,H1,K,G1,G2,G3,G4:Integer;//r polomÃ¬r okolÃ­ bodu, e hustota sÃ­tÃ¬,
     PRecordKor,PRecordKor2:GPPointsRecordKor;
  begin
   Korelace.Enabled:=false; Interpolace.Enabled:=true;
   width:=Gwidth; height:=Gheight; Header:=Gheader; U:=GU; Size:=GSize;
-  SetLength(GPointsKor, Gn);//nastaví délku pole pro TListy na poèet vybranıch obrázkù Gn
-  SetLength(AGDicVertex, Gn);//nastaví délku pole pro slovníky na poèet vybranıch obrázkù Gn
+  SetLength(GPointsKor, Gn);//nastavÃ­ dÃ©lku pole pro TListy na poÃ¨et vybranÃ½ch obrÃ¡zkÃ¹ Gn
+  SetLength(AGDicVertex, Gn);//nastavÃ­ dÃ©lku pole pro slovnÃ­ky na poÃ¨et vybranÃ½ch obrÃ¡zkÃ¹ Gn
   ProgressBar1.Position := 0;
   ProgressBar1.Update;
   ProgressBar1.Min := 0;
@@ -1102,11 +1102,11 @@ var J,I,J2,I2,L,FullSize,q,width,height,U,Header,Size, BodI, BodJ,b,G:Integer;
   ProgressBar1.Update;
   LUzly:=TList.Create; LBody:=Tlist.Create;
   GPointsKor[b]:=TList.Create;
-  AGDicVertex[b] := TDictionary<integer, GPPointsRecordKor>.Create;  //vytvoøení slovníku pro vrcholy interpolaèní sítì
+  AGDicVertex[b] := TDictionary<integer, GPPointsRecordKor>.Create;  //vytvoÃ¸enÃ­ slovnÃ­ku pro vrcholy interpolaÃ¨nÃ­ sÃ­tÃ¬
   GetMem(ObrP2,Size);
-  Move(GB2[b]^,ObrP2^,size);//Zkopíruje originální data do nového bufferu ObrP2^, kterı v sobì obsahuje data obrázku q-tého
-     //Projede body v obrazu ObrP2 a v bodech, jejich souøadnice odpovídají bodùm v síti spoète pro kadı bod jejich okolí korelaci
-  r:=strtoint(PolomerKor.Text);a:=strtoint(OkoliKorelace.Text); Rk:=a; // r = Polomìr okolí uzlu sítì, Rk = polomìr okolí uzlu sítì, v nìm hledáme body na vıpoèet korelace, Up pokud leí pixel s maximální korelací na hranici okolí v nìm hledáme korelaci, pak toto okolí zvyš o +1
+  Move(GB2[b]^,ObrP2^,size);//ZkopÃ­ruje originÃ¡lnÃ­ data do novÃ©ho bufferu ObrP2^, kterÃ½ v sobÃ¬ obsahuje data obrÃ¡zku q-tÃ©ho
+     //Projede body v obrazu ObrP2 a v bodech, jejichÅ¾ souÃ¸adnice odpovÃ­dajÃ­ bodÃ¹m v sÃ­ti spoÃ¨te pro kaÅ¾dÃ½ bod jejich okolÃ­ korelaci
+  r:=strtoint(PolomerKor.Text);a:=strtoint(OkoliKorelace.Text); Rk:=a; // r = PolomÃ¬r okolÃ­ uzlu sÃ­tÃ¬, Rk = polomÃ¬r okolÃ­ uzlu sÃ­tÃ¬, v nÃ¬mÅ¾ hledÃ¡me body na vÃ½poÃ¨et korelace, Up pokud leÅ¾Ã­ pixel s maximÃ¡lnÃ­ korelacÃ­ na hranici okolÃ­ v nÃ¬mÅ¾ hledÃ¡me korelaci, pak toto okolÃ­ zvyÅ¡ o +1
   G:=0;
   for I:=0 to (height-1) do
     begin
@@ -1114,7 +1114,7 @@ var J,I,J2,I2,L,FullSize,q,width,height,U,Header,Size, BodI, BodJ,b,G:Integer;
       //ProgressBar1.Update;
       for J:=0 to (width-1) do
       begin
-         if ( GDicPosition.ContainsKey(I*width+J) {I*width+J=GPointsPosition[L]}) And ( ( ((I-r)>=0) And ((I+r)<=(height-1)) ) And ( ((J-r)>=0) And ((J+r)<=(width-1)) ) ) then   //Zjistí, jestli je bod uzlem sítì a jestli jeho celé okolí leí v obraze
+         if ( GDicPosition.ContainsKey(I*width+J) {I*width+J=GPointsPosition[L]}) And ( ( ((I-r)>=0) And ((I+r)<=(height-1)) ) And ( ((J-r)>=0) And ((J+r)<=(width-1)) ) ) then   //ZjistÃ­, jestli je bod uzlem sÃ­tÃ¬ a jestli jeho celÃ© okolÃ­ leÅ¾Ã­ v obraze
           begin
             Ax:=AritmetickyPrumer(r,I,J,width);
             Sx:=SmerodatnaOdchylka(r,I,J,width,Ax);
@@ -1129,11 +1129,11 @@ var J,I,J2,I2,L,FullSize,q,width,height,U,Header,Size, BodI, BodJ,b,G:Integer;
                   end
                 else
                 begin
-                t:=t+2; //Nastaví novou délku sloupce, resp. øádku
-                H1:=-K; Up:=false;  //Up pokud leí pixel s maximální korelací na hranici okolí v nìm hledáme korelaci, pak toto okolí zvyš o +1
-                for G1:=0 to (t-1) do //Projede spodní øádek
+                t:=t+2; //NastavÃ­ novou dÃ©lku sloupce, resp. Ã¸Ã¡dku
+                H1:=-K; Up:=false;  //Up pokud leÅ¾Ã­ pixel s maximÃ¡lnÃ­ korelacÃ­ na hranici okolÃ­ v nÃ¬mÅ¾ hledÃ¡me korelaci, pak toto okolÃ­ zvyÅ¡ o +1
+                for G1:=0 to (t-1) do //Projede spodnÃ­ Ã¸Ã¡dek
                   begin
-                    if (J+H1+G1-r<0) or (J+H1+G1+r>(width-1)) or ((I+K+r)>(height-1)) or ((I+K-r)<0) then // Podmínka, jestli okolí bodu v nìm poèítáme korelaci v okolí uzlu leí v obraze. poslední ètyøi podmínky ovìøují jestli lze spoèíst korelaci s polomìrem r k uzlu
+                    if (J+H1+G1-r<0) or (J+H1+G1+r>(width-1)) or ((I+K+r)>(height-1)) or ((I+K-r)<0) then // PodmÃ­nka, jestli okolÃ­ bodu v nÃ¬mÅ¾ poÃ¨Ã­tÃ¡me korelaci v okolÃ­ uzlu leÅ¾Ã­ v obraze. poslednÃ­ Ã¨tyÃ¸i podmÃ­nky ovÃ¬Ã¸ujÃ­ jestli lze spoÃ¨Ã­st korelaci s polomÃ¬rem r k uzlu
                     else
                       begin
                         KorelaceR:=Korel(r,I,J,K,(-K+G1),width,Ax,Sx,ObrP2);
@@ -1141,13 +1141,13 @@ var J,I,J2,I2,L,FullSize,q,width,height,U,Header,Size, BodI, BodJ,b,G:Integer;
                           begin
                             MaxKorelace:=KorelaceR;
                             BodI:=I+K; BodJ:=J+H1+G1;
-                            if K>=Rk then Up:=True; // pokud bod s maximální korelací, leí v na hranici okolí uzlu, pak toto oklí zvıšíme o +1 (viz. øádek níe)
+                            if K>=Rk then Up:=True; // pokud bod s maximÃ¡lnÃ­ korelacÃ­, leÅ¾Ã­ v na hranici okolÃ­ uzlu, pak toto oklÃ­ zvÃ½Å¡Ã­me o +1 (viz. Ã¸Ã¡dek nÃ­Å¾e)
                           end;
                       end;
                     end;
-                for G2:=0 to (t-1) do //Projede horní øádek
+                for G2:=0 to (t-1) do //Projede hornÃ­ Ã¸Ã¡dek
                   begin
-                    if (J+H1+G2-r<0) or (J+H1+G2+r>(width-1)) or ((I-K+r)>(height-1)) or ((I-K-r)<0) then // Podmínka, jestli okolí bodu v nìm poèítáme korelaci v okolí uzlu leí v obraze.  poslední ètyøi podmínky ovìøují jestli lze spoèíst korelaci s polomìrem r k uzlu
+                    if (J+H1+G2-r<0) or (J+H1+G2+r>(width-1)) or ((I-K+r)>(height-1)) or ((I-K-r)<0) then // PodmÃ­nka, jestli okolÃ­ bodu v nÃ¬mÅ¾ poÃ¨Ã­tÃ¡me korelaci v okolÃ­ uzlu leÅ¾Ã­ v obraze.  poslednÃ­ Ã¨tyÃ¸i podmÃ­nky ovÃ¬Ã¸ujÃ­ jestli lze spoÃ¨Ã­st korelaci s polomÃ¬rem r k uzlu
                     else
                       begin
                         KorelaceR:=Korel(r,I,J,-K,(-K+G2),width,Ax,Sx,ObrP2);
@@ -1155,13 +1155,13 @@ var J,I,J2,I2,L,FullSize,q,width,height,U,Header,Size, BodI, BodJ,b,G:Integer;
                           begin
                             MaxKorelace:=KorelaceR;
                             BodI:=I-K;BodJ:=J+H1+G2;
-                            if K>=Rk then Up:=True; // pokud bod s maximální korelací, leí v na hranici okolí uzlu, pak toto oklí zvıšíme o +1 (viz. øádek níe)
+                            if K>=Rk then Up:=True; // pokud bod s maximÃ¡lnÃ­ korelacÃ­, leÅ¾Ã­ v na hranici okolÃ­ uzlu, pak toto oklÃ­ zvÃ½Å¡Ã­me o +1 (viz. Ã¸Ã¡dek nÃ­Å¾e)
                           end;
                       end;
                     end;
-                for G3:=1 to (t-2) do //Projede levı sloupec
+                for G3:=1 to (t-2) do //Projede levÃ½ sloupec
                     begin
-                    if (J-K-r<0) or ((I-K+G3+r)>(height-1)) or ((I-K+G3-r)<0) or (J-K+r>(width-1)) then // Podmínka, jestli okolí bodu v nìm poèítáme korelaci v okolí uzlu leí v obraze.  poslední ètyøi podmínky ovìøují jestli lze spoèíst korelaci s polomìrem r k uzlu
+                    if (J-K-r<0) or ((I-K+G3+r)>(height-1)) or ((I-K+G3-r)<0) or (J-K+r>(width-1)) then // PodmÃ­nka, jestli okolÃ­ bodu v nÃ¬mÅ¾ poÃ¨Ã­tÃ¡me korelaci v okolÃ­ uzlu leÅ¾Ã­ v obraze.  poslednÃ­ Ã¨tyÃ¸i podmÃ­nky ovÃ¬Ã¸ujÃ­ jestli lze spoÃ¨Ã­st korelaci s polomÃ¬rem r k uzlu
                     else
                       begin
                         KorelaceR:=Korel(r,I,J,(-K+G3),-K,width,Ax,Sx,ObrP2);
@@ -1169,13 +1169,13 @@ var J,I,J2,I2,L,FullSize,q,width,height,U,Header,Size, BodI, BodJ,b,G:Integer;
                           begin
                             MaxKorelace:=KorelaceR;
                             BodI:=I-K+G3; BodJ:=J-K;
-                            if K>=Rk then Up:=True; // pokud bod s maximální korelací, leí v na hranici okolí uzlu, pak toto oklí zvıšíme o +1 (viz. øádek níe)
+                            if K>=Rk then Up:=True; // pokud bod s maximÃ¡lnÃ­ korelacÃ­, leÅ¾Ã­ v na hranici okolÃ­ uzlu, pak toto oklÃ­ zvÃ½Å¡Ã­me o +1 (viz. Ã¸Ã¡dek nÃ­Å¾e)
                           end;
                       end;
                     end;
-                for G4:=1 to (t-2) do //Projede pravı sloupec
+                for G4:=1 to (t-2) do //Projede pravÃ½ sloupec
                     begin
-                    if (J+K+r>(width-1)) or (J+K-r<0) or ((I-K+G4-r)<0) or ((I-K+G4+r)>(height-1)) then  // Podmínka, jestli okolí bodu v nìm poèítáme korelaci v okolí uzlu leí v obraze.  poslední ètyøi podmínky ovìøují jestli lze spoèíst korelaci s polomìrem r k uzlu
+                    if (J+K+r>(width-1)) or (J+K-r<0) or ((I-K+G4-r)<0) or ((I-K+G4+r)>(height-1)) then  // PodmÃ­nka, jestli okolÃ­ bodu v nÃ¬mÅ¾ poÃ¨Ã­tÃ¡me korelaci v okolÃ­ uzlu leÅ¾Ã­ v obraze.  poslednÃ­ Ã¨tyÃ¸i podmÃ­nky ovÃ¬Ã¸ujÃ­ jestli lze spoÃ¨Ã­st korelaci s polomÃ¬rem r k uzlu
                     else
                       begin
                         KorelaceR:=Korel(r,I,J,(-K+G4),K,width,Ax,Sx,ObrP2);
@@ -1183,14 +1183,14 @@ var J,I,J2,I2,L,FullSize,q,width,height,U,Header,Size, BodI, BodJ,b,G:Integer;
                           begin
                             MaxKorelace:=KorelaceR;
                             BodI:=I-K+G4; BodJ:=J+K;
-                            if K>=Rk then Up:=True; // pokud bod s maximální korelací, leí v na hranici okolí uzlu, pak toto oklí zvıšíme o +1 (viz. øádek níe)
+                            if K>=Rk then Up:=True; // pokud bod s maximÃ¡lnÃ­ korelacÃ­, leÅ¾Ã­ v na hranici okolÃ­ uzlu, pak toto oklÃ­ zvÃ½Å¡Ã­me o +1 (viz. Ã¸Ã¡dek nÃ­Å¾e)
                           end;
                       end;
                     end;
                 end;
                 inc(K);
               end;
-          //Naètení pozice uzlu v nìm je poèítána korelace s bodem leícím v okolí tohoto uzlu do listù záznamù
+          //NaÃ¨tenÃ­ pozice uzlu v nÃ¬mÅ¾ je poÃ¨Ã­tÃ¡na korelace s bodem leÅ¾Ã­cÃ­m v okolÃ­ tohoto uzlu do listÃ¹ zÃ¡znamÃ¹
           Rk:=a;
           New(PRecordU); New(PRecordB);
           PRecordU^.I:=I; PRecordU^.J:=J;
@@ -1199,8 +1199,8 @@ var J,I,J2,I2,L,FullSize,q,width,height,U,Header,Size, BodI, BodJ,b,G:Integer;
           end;
       end;
     end;
-  U:=LUzly.Count; //U= poèet bodù v nich byla spoètena korelace
-  //NAÈTENÍ DAT DO SLOVNÍKU AGDicCVertex a listu GPointsKor
+  U:=LUzly.Count; //U= poÃ¨et bodÃ¹ v nichÅ¾ byla spoÃ¨tena korelace
+  //NAÃˆTENÃ DAT DO SLOVNÃKU AGDicCVertex a listu GPointsKor
   for I:=0 to (U-1) do
   begin
       PRecordU:=LUzly.Items[I]; PRecordB:=LBody.Items[I];
@@ -1216,28 +1216,28 @@ var J,I,J2,I2,L,FullSize,q,width,height,U,Header,Size, BodI, BodJ,b,G:Integer;
       PRecordKor2^.PosunJ:=-PRecordU^.J+PRecordB^.J;
       PrecordKor2^.Position:=PRecordU^.I*width+PRecordU^.J;
       if AGDicVertex[b].ContainsKey(PrecordKor2^.Position)=false then
-        AGDicVertex[b].Add(PrecordKor2^.Position, PrecordKor2); // nahrání pùvodních vrcholù do slovníku interpolaèní sítì
+        AGDicVertex[b].Add(PrecordKor2^.Position, PrecordKor2); // nahrÃ¡nÃ­ pÃ¹vodnÃ­ch vrcholÃ¹ do slovnÃ­ku interpolaÃ¨nÃ­ sÃ­tÃ¬
   end;
-  for I := 0 to U-1 do  //Uvolnìní pamìti vyhrazené na pointery v listu
+  for I := 0 to U-1 do  //UvolnÃ¬nÃ­ pamÃ¬ti vyhrazenÃ© na pointery v listu
   begin
     Dispose(LUzly.Items[I]);
     Dispose(LBody.Items[I]);
   end;
-  LUzly.Free; LBody.Free;//smae listy
-  //Uvolnìní pamìti
-  FreeMem(ObrP2); //Uvolní zabranou pamì, GPointsPosition - list uzlù sítì
+  LUzly.Free; LBody.Free;//smaÅ¾e listy
+  //UvolnÃ¬nÃ­ pamÃ¬ti
+  FreeMem(ObrP2); //UvolnÃ­ zabranou pamÃ¬Â, GPointsPosition - list uzlÃ¹ sÃ­tÃ¬
   end;
-  showmessage('Korelace dokonèena.');
+  showmessage('Korelace dokonÃ¨ena.');
   GDicPosition.Clear; GDicPosition.destroy;
   //FreeMem(GPointsPosition,GU*4);
  // ReportMemoryLeaksOnShutdown := True;
 end;
 
 procedure TMainForm.InterpolaceClick(Sender: TObject);
-var width, height,I,J,I2,J2,m,e,r,t,t2,L,H1,K,K2,Uk,G1,G2,G3,G4,w,P,Q,C,b,Key,S:Integer; //e = krok v pomocné síti, r = polomìr okolí bodu v pomocné síti
-    LVertex,LFakeVertex:Tlist;//LVertex = List vrcholù trojúhelníkové sítì,
-    FakeVertex:GPFVertex;//ukazatel na vrchol, kterı se nehodí k aktuální triangulaci
-    PPixel, PVertex,PVertex2,A,A2,A3:GPPointsRecordKor; // A,B,C pøedtsavují vrcholy trojúhelníku, kterı pouíváme pro interpolaci hodnot pixelu v trojúhelníku ABC
+var width, height,I,J,I2,J2,m,e,r,t,t2,L,H1,K,K2,Uk,G1,G2,G3,G4,w,P,Q,C,b,Key,S:Integer; //e = krok v pomocnÃ© sÃ­ti, r = polomÃ¬r okolÃ­ bodu v pomocnÃ© sÃ­ti
+    LVertex,LFakeVertex:Tlist;//LVertex = List vrcholÃ¹ trojÃºhelnÃ­kovÃ© sÃ­tÃ¬,
+    FakeVertex:GPFVertex;//ukazatel na vrchol, kterÃ½ se nehodÃ­ k aktuÃ¡lnÃ­ triangulaci
+    PPixel, PVertex,PVertex2,A,A2,A3:GPPointsRecordKor; // A,B,C pÃ¸edtsavujÃ­ vrcholy trojÃºhelnÃ­ku, kterÃ½ pouÅ¾Ã­vÃ¡me pro interpolaci hodnot pixelu v trojÃºhelnÃ­ku ABC
     Clear,Inside,FirstK,Up:Boolean;
     Triangle:array[0..2] of GPPointsRecordKor;
     D:array of array of GPPointsRecordKor;
@@ -1246,10 +1246,10 @@ Label StartNewK;
 begin
   Interpolace.Enabled:=false; UlozPosuvy.Enabled:=true; Posuvy.Enabled:=true;  BilinearniInterpolace.Enabled:=true;
   width:=Gwidth; height:=Gheight; LVertex:=Tlist.Create;
-  Uk:= GPointsKor[0].Count; // Uk = Poèet záznamù v listu bodù, ve kterıch poèítáme korelaci
+  Uk:= GPointsKor[0].Count; // Uk = PoÃ¨et zÃ¡znamÃ¹ v listu bodÃ¹, ve kterÃ½ch poÃ¨Ã­tÃ¡me korelaci
   SetLength(GLPixelData,Gn);
   MaxPolomer:=StrToInt(MaxPol.Text);
-  for I:=0 to (Uk-1) do //zkopíruje hodnoty v listu GPointsKor do nového lsitu vrhcolù trojúhelníkù trojúhelníkové sítì LVertex
+  for I:=0 to (Uk-1) do //zkopÃ­ruje hodnoty v listu GPointsKor do novÃ©ho lsitu vrhcolÃ¹ trojÃºhelnÃ­kÃ¹ trojÃºhelnÃ­kovÃ© sÃ­tÃ¬ LVertex
   begin
     New(PVertex2);
     NewPixel(GPointsKor[0].Items[I],PVertex2);
@@ -1258,8 +1258,8 @@ begin
   ProgressBar1.Position := 0;
   ProgressBar1.Update;
   ProgressBar1.Min := 0;
-  //Do LVertex pøidáme pomocnou sí bodù
-  e:=strtoint(KrokPomSit.Text);r:=strtoint(PolomerPomSit.Text);   //e = krok v pomocné síti, r = polomìr okolí bodu v pomocné síti
+  //Do LVertex pÃ¸idÃ¡me pomocnou sÃ­Â bodÃ¹
+  e:=strtoint(KrokPomSit.Text);r:=strtoint(PolomerPomSit.Text);   //e = krok v pomocnÃ© sÃ­ti, r = polomÃ¬r okolÃ­ bodu v pomocnÃ© sÃ­ti
   ProgressBar1.Step := round(ProgressBar1.width/(((height-1) div e)+height));
   ProgressBar1.Max :=((height-1) div e)+ height;
   for I:=0 to ((height-1) div e) do
@@ -1270,28 +1270,28 @@ begin
     for J:=0 to ((width-1) div e) do
     begin
       J2:=J*e;
-      if (I=0) or (J=0) then  //pokud pixel leí v prvním øádku, nebo prvním sloupci je automaticky uloen
+      if (I=0) or (J=0) then  //pokud pixel leÅ¾Ã­ v prvnÃ­m Ã¸Ã¡dku, nebo prvnÃ­m sloupci je automaticky uloÅ¾en
       begin
         New(PVertex2);
-        NewVertex(PVertex2,I2,J2,width); //Procedura, která do ukazatele pvertex nahraje pozici bodu pomocného uzlu, jeho posunutí a souøadnice I,J
+        NewVertex(PVertex2,I2,J2,width); //Procedura, kterÃ¡ do ukazatele pvertex nahraje pozici bodu pomocnÃ©ho uzlu, jeho posunutÃ­ a souÃ¸adnice I,J
         for b := 0 to Gn-1 do
         begin
           New(PVertex); NewVertex(PVertex,I2,J2,width);
-          if b=0 then LVertex.Add(PVertex2); //pro sít tvoøenou uzly sítì
-          if AGDicVertex[b].ContainsKey(PVertex^.Position)=false then AGDicVertex[b].Add(PVertex^.Position, PVertex); //do slovníku vrcholù interpolaèní sítì pøidáme body pomocné sítì
+          if b=0 then LVertex.Add(PVertex2); //pro sÃ­t tvoÃ¸enou uzly sÃ­tÃ¬
+          if AGDicVertex[b].ContainsKey(PVertex^.Position)=false then AGDicVertex[b].Add(PVertex^.Position, PVertex); //do slovnÃ­ku vrcholÃ¹ interpolaÃ¨nÃ­ sÃ­tÃ¬ pÃ¸idÃ¡me body pomocnÃ© sÃ­tÃ¬
         end;
        continue;
       end;
       Clear:=HelpVertex(Uk,width,I2,J2,0,0,0);
-      if clear=false then continue// pokud je uzel pomocné sítì identickı s uzlem pùvodní sítì, pak se pøejde na další uzel
-      else //Není-li pomocnı uzel identickı s ádnım uzlem pomocné sítì, pak prohledáme okolí pomocného uzlu, abychom ovìøili, e v nìm není ádnı bod, kterı by byl uzlem pùvodní sítì
+      if clear=false then continue// pokud je uzel pomocnÃ© sÃ­tÃ¬ identickÃ½ s uzlem pÃ¹vodnÃ­ sÃ­tÃ¬, pak se pÃ¸ejde na dalÅ¡Ã­ uzel
+      else //NenÃ­-li pomocnÃ½ uzel identickÃ½ s Å¾Ã¡dnÃ½m uzlem pomocnÃ© sÃ­tÃ¬, pak prohledÃ¡me okolÃ­ pomocnÃ©ho uzlu, abychom ovÃ¬Ã¸ili, Å¾e v nÃ¬m nenÃ­ Å¾Ã¡dnÃ½ bod, kterÃ½ by byl uzlem pÃ¹vodnÃ­ sÃ­tÃ¬
             begin
               t:=3;
-              for K:=1 to r do // Cyklus pro danı poèet krunic kolem uzlu, poèet krunic= polomìr nìjvìtší krunice tj. r
+              for K:=1 to r do // Cyklus pro danÃ½ poÃ¨et kruÅ¾nic kolem uzlu, poÃ¨et kruÅ¾nic= polomÃ¬r nÃ¬jvÃ¬tÅ¡Ã­ kruÅ¾nice tj. r
                 begin
-                    if (K>1) then t:=t+2; //Nastaví novou délku sloupce, resp. øádku
+                    if (K>1) then t:=t+2; //NastavÃ­ novou dÃ©lku sloupce, resp. Ã¸Ã¡dku
                     H1:=-K;
-                    for G1:=0 to (t-1) do //Projede spodní øádek
+                    for G1:=0 to (t-1) do //Projede spodnÃ­ Ã¸Ã¡dek
                     begin
                       if (I2+K>=0) and (I2+K<=height-1) and (J2-K+G1>=0) and (J2-K+G1<=width-1) then
                         begin
@@ -1300,7 +1300,7 @@ begin
                         end;
                     end;
                     if clear=false then break;
-                    for G2:=0 to (t-1) do //Projede horní øádek
+                    for G2:=0 to (t-1) do //Projede hornÃ­ Ã¸Ã¡dek
                     begin
                       if (I2-K>=0) and (I2-K<=height-1) and (J2-K+G2>=0) and (J2-K+G2<=width-1) then
                         begin
@@ -1309,7 +1309,7 @@ begin
                         end;
                     end;
                     if clear=false then break;
-                    for G3:=1 to (t-2) do //Projede levı sloupec
+                    for G3:=1 to (t-2) do //Projede levÃ½ sloupec
                     begin
                       if (I2-K+G3>=0) and (I2-K+G3<=height-1) and (J2-K>=0) and (J2-K<=width-1) then
                       begin
@@ -1318,7 +1318,7 @@ begin
                       end;
                     end;
                     if clear=false then break;
-                    for G4:=1 to (t-2) do //Projede pravı sloupec
+                    for G4:=1 to (t-2) do //Projede pravÃ½ sloupec
                     begin
                       if (I2-K+G4>=0) and (I2-K+G4<=height-1) and (J2+K>=0) and (J2+K<=width-1) then
                       begin
@@ -1328,22 +1328,22 @@ begin
                     end;
                     if clear=false then break;
                 end;
-                if clear=true then //pokud v okolí uzlu pomocné sítì neleí ádnı bod pùvodní sítì, pak je tento bod pøidán do listu vrcholù trojùhelníkové sítì LVertex
+                if clear=true then //pokud v okolÃ­ uzlu pomocnÃ© sÃ­tÃ¬ neleÅ¾Ã­ Å¾Ã¡dnÃ½ bod pÃ¹vodnÃ­ sÃ­tÃ¬, pak je tento bod pÃ¸idÃ¡n do listu vrcholÃ¹ trojÃ¹helnÃ­kovÃ© sÃ­tÃ¬ LVertex
                 begin
                   New(PVertex2);
-                  NewVertex(PVertex2,I2,J2,width);//Procedura, která do ukazatele pvertex nahraje pozici bodu pomocného uzlu, jeho posunutí a souøadnice I,J
+                  NewVertex(PVertex2,I2,J2,width);//Procedura, kterÃ¡ do ukazatele pvertex nahraje pozici bodu pomocnÃ©ho uzlu, jeho posunutÃ­ a souÃ¸adnice I,J
                   for b := 0 to Gn-1 do
                   begin
                     New(PVertex); NewVertex(PVertex,I2,J2,width);
-                    if b=0 then LVertex.Add(PVertex2);//pro sít tvoøenou uzly sítì
-                    if AGDicVertex[b].ContainsKey(PVertex^.Position)=false then AGDicVertex[b].Add(PVertex^.Position, PVertex); //do slovníku vrcholù interpolaèní sítì pøidáme body pomocné sítì
+                    if b=0 then LVertex.Add(PVertex2);//pro sÃ­t tvoÃ¸enou uzly sÃ­tÃ¬
+                    if AGDicVertex[b].ContainsKey(PVertex^.Position)=false then AGDicVertex[b].Add(PVertex^.Position, PVertex); //do slovnÃ­ku vrcholÃ¹ interpolaÃ¨nÃ­ sÃ­tÃ¬ pÃ¸idÃ¡me body pomocnÃ© sÃ­tÃ¬
                   end;
                 end;
             end;
     end;
   end;
-  //pøidáme do pomocné sítì body na hranici obrazu
-  //poslední sloupec
+  //pÃ¸idÃ¡me do pomocnÃ© sÃ­tÃ¬ body na hranici obrazu
+  //poslednÃ­ sloupec
   for I:=0 to ((height-1) div e) do
   begin
     I2:=I*e;
@@ -1355,15 +1355,15 @@ begin
         begin
           New(PVertex2);
           NewVertex(PVertex2,I2,width-1,width);
-          if b=0 then LVertex.Add(PVertex2);  //pro sít tvoøenou uzly sítì
+          if b=0 then LVertex.Add(PVertex2);  //pro sÃ­t tvoÃ¸enou uzly sÃ­tÃ¬
         end;
       New(PVertex);
       NewVertex(PVertex,I2,width-1,width);
-      AGDicVertex[b].Add(PVertex^.Position, PVertex); //do slovníku vrcholù interpolaèní sítì pøidáme body pomocné sítì
+      AGDicVertex[b].Add(PVertex^.Position, PVertex); //do slovnÃ­ku vrcholÃ¹ interpolaÃ¨nÃ­ sÃ­tÃ¬ pÃ¸idÃ¡me body pomocnÃ© sÃ­tÃ¬
       end;
     end;
   end;
-  //poslední øádek
+  //poslednÃ­ Ã¸Ã¡dek
   for I:=0 to ((width-1) div e) do
   begin
     I2:=I*e;
@@ -1375,15 +1375,15 @@ begin
         begin
           New(PVertex2);
           NewVertex(PVertex2,height-1,I2,width);
-          LVertex.Add(PVertex2); //pro sít tvoøenou uzly sítì
+          LVertex.Add(PVertex2); //pro sÃ­t tvoÃ¸enou uzly sÃ­tÃ¬
         end;
         New(PVertex);
         NewVertex(PVertex,height-1,I2,width);
-        AGDicVertex[b].Add(PVertex^.Position, PVertex); //do slovníku vrcholù interpolaèní sítì pøidáme body pomocné sítì
+        AGDicVertex[b].Add(PVertex^.Position, PVertex); //do slovnÃ­ku vrcholÃ¹ interpolaÃ¨nÃ­ sÃ­tÃ¬ pÃ¸idÃ¡me body pomocnÃ© sÃ­tÃ¬
       end;
     end;
   end;
-  //pravı dolní roh
+  //pravÃ½ dolnÃ­ roh
   for b := 0 to Gn-1 do
   begin
     if AGDicVertex[b].ContainsKey((height-1)*width+(width-1))=false then
@@ -1392,20 +1392,20 @@ begin
       begin
         New(PVertex2);
         NewVertex(PVertex2,height-1,width-1,width);
-        LVertex.Add(PVertex2);     //pro sít tvoøenou uzly sítì
+        LVertex.Add(PVertex2);     //pro sÃ­t tvoÃ¸enou uzly sÃ­tÃ¬
       end;
     New(PVertex); NewVertex(PVertex,height-1,width-1,width);
-    AGDicVertex[b].Add(PVertex^.Position, PVertex); //do slovníku vrcholù interpolaèní sítì pøidáme body pomocné sítì
+    AGDicVertex[b].Add(PVertex^.Position, PVertex); //do slovnÃ­ku vrcholÃ¹ interpolaÃ¨nÃ­ sÃ­tÃ¬ pÃ¸idÃ¡me body pomocnÃ© sÃ­tÃ¬
     end;
   end;
-  TriangleNetBmp(width,height,Uk,e,r,LVertex);//LVertex);    //Uloení triangulaèní sítì
-  //UVOLNÌNÍ PAMÌTI
+  TriangleNetBmp(width,height,Uk,e,r,LVertex);//LVertex);    //UloÅ¾enÃ­ triangulaÃ¨nÃ­ sÃ­tÃ¬
+  //UVOLNÃŒNÃ PAMÃŒTI
   for I:=0 to (LVertex.Count-1) do
   begin
-    Dispose(LVertex.Items[I]);             //smae jednotlivé pointery na vrcholy trojúhelníkové sítì
+    Dispose(LVertex.Items[I]);             //smaÅ¾e jednotlivÃ© pointery na vrcholy trojÃºhelnÃ­kovÃ© sÃ­tÃ¬
   end;
-  Lvertex.Free;  //smae list vrcholù trojúhelníkové sítì
-    //=======================================Samotná interpolace dat pomocí interpolaèních rovin=============================================
+  Lvertex.Free;  //smaÅ¾e list vrcholÃ¹ trojÃºhelnÃ­kovÃ© sÃ­tÃ¬
+    //=======================================SamotnÃ¡ interpolace dat pomocÃ­ interpolaÃ¨nÃ­ch rovin=============================================
 
  // ProgressBar1.Position := 0;
  // ProgressBar1.Update;
@@ -1415,7 +1415,7 @@ begin
   New(A);New(A2);New(A3);
   for b := 0 to Gn-1 do
   begin
-    GLPixelData[b]:=Tlist.Create;//vytvoøí list na pixely v obraze
+    GLPixelData[b]:=Tlist.Create;//vytvoÃ¸Ã­ list na pixely v obraze
   end;
   for I:=0 to (height-1) do
   begin
@@ -1423,15 +1423,15 @@ begin
     ProgressBar1.Update;
     for J:=0 to (width-1) do
     begin
-      LFakeVertex:=TList.Create; //vytvoøí list pro nevhodné vrcholy
+      LFakeVertex:=TList.Create; //vytvoÃ¸Ã­ list pro nevhodnÃ© vrcholy
       if AGDicvertex[0].ContainsKey(I*width+J)=true then
       begin
         for b := 0 to Gn-1 do
         begin
           AGDicvertex[b].TryGetValue(I*width+J,PVertex);
           New(PPixel);
-          NewPixel(PVertex,PPixel);//hodnoty z pointeru PVertex jsou zkopírovány do pointeru PPixel
-          GLPixeldata[b].Add(PPixel);//Pokud je nìkterı pixel totonı s vrcholem interpolaèní sítì, pak se tento vrchol nahraje do listu LPixelData
+          NewPixel(PVertex,PPixel);//hodnoty z pointeru PVertex jsou zkopÃ­rovÃ¡ny do pointeru PPixel
+          GLPixeldata[b].Add(PPixel);//Pokud je nÃ¬kterÃ½ pixel totoÅ¾nÃ½ s vrcholem interpolaÃ¨nÃ­ sÃ­tÃ¬, pak se tento vrchol nahraje do listu LPixelData
         end;
       end
       else
@@ -1450,11 +1450,11 @@ begin
         begin
           w:=1; t:=t2;
         end;
-        //===================================================================PROHLEDÁVÁNÍ OKOLÍ=====================================
-        for K:=K2 to 500 do // Cyklus pro danı poèet krunic kolem uzlu, poèet krunic= polomìr nìjvìtší krunice tj. r
+        //===================================================================PROHLEDÃVÃNÃ OKOLÃ=====================================
+        for K:=K2 to 500 do // Cyklus pro danÃ½ poÃ¨et kruÅ¾nic kolem uzlu, poÃ¨et kruÅ¾nic= polomÃ¬r nÃ¬jvÃ¬tÅ¡Ã­ kruÅ¾nice tj. r
           begin
-            if (K>1) then t:=t+2; //Nastaví novou délku sloupce, resp. øádku
-            if K>MaxPolomer{4.5*e} then //pokud se prohledalo pøíliš velké okolí, pak sma nalezené 2 nejbliší body, 2. nejbliší bod ulo jako FakeVertex (tj. vrchol nevhodnı na triangulaci)
+            if (K>1) then t:=t+2; //NastavÃ­ novou dÃ©lku sloupce, resp. Ã¸Ã¡dku
+            if K>MaxPolomer{4.5*e} then //pokud se prohledalo pÃ¸Ã­liÅ¡ velkÃ© okolÃ­, pak smaÅ¾ nalezenÃ© 2 nejbliÅ¾Å¡Ã­ body, 2. nejbliÅ¾Å¡Ã­ bod uloÅ¾ jako FakeVertex (tj. vrchol nevhodnÃ½ na triangulaci)
             begin
               New(FakeVertex);
               FakeVertex^.I:=Triangle[1]^.I; FakeVertex^.J:=Triangle[1]^.J;
@@ -1463,9 +1463,9 @@ begin
               goto StartNewK;
             end;
             Inside:=false;
-            for G1:=0 to (t-1) do //Projede spodní øádek
+            for G1:=0 to (t-1) do //Projede spodnÃ­ Ã¸Ã¡dek
             begin
-              if (I+K>=0) and (I+K<=height-1) and (J-K+G1<=width-1) and (J-K+G1>=0) then//zjistí, jestli danı pixel leí v obraze
+              if (I+K>=0) and (I+K<=height-1) and (J-K+G1<=width-1) and (J-K+G1>=0) then//zjistÃ­, jestli danÃ½ pixel leÅ¾Ã­ v obraze
               begin
               if (AGDicvertex[0].ContainsKey((I+K)*width+J-K+G1)=true) and (CheckFakeVertex(LFakeVertex,I,J,K,-K+G1)=false) then
               begin
@@ -1475,7 +1475,7 @@ begin
                   NewPixel(PVertex,Triangle[w]);
                   if w=1 then
                   begin
-                   if Det2(J,I,Triangle[0]^.J,Triangle[0]^.I,Triangle[1]^.J,Triangle[1]^.I) then // ovìøíme, jestli bod leí na pøímce dané jeho dvìma nejblišími body
+                   if Det2(J,I,Triangle[0]^.J,Triangle[0]^.I,Triangle[1]^.J,Triangle[1]^.I) then // ovÃ¬Ã¸Ã­me, jestli bod leÅ¾Ã­ na pÃ¸Ã­mce danÃ© jeho dvÃ¬ma nejbliÅ¾Å¡Ã­mi body
                    begin
                     Inside:=Interpolation(I,J,width,w,Triangle);
                     break;
@@ -1483,24 +1483,24 @@ begin
                    K2:=K;  t2:=t;
                   end;
                   inc(w);
-                  if w = 3 then  //pokud w =3, pak jsme našli 3 nejbliší body a musíme dále ovìøit, jestli náš pixel, leí uvnitø trojúhelníku tvoøeného tìmito body
+                  if w = 3 then  //pokud w =3, pak jsme naÅ¡li 3 nejbliÅ¾Å¡Ã­ body a musÃ­me dÃ¡le ovÃ¬Ã¸it, jestli nÃ¡Å¡ pixel, leÅ¾Ã­ uvnitÃ¸ trojÃºhelnÃ­ku tvoÃ¸enÃ©ho tÃ¬mito body
                   begin
-                    Inside :=CheckPixel(I,J,Triangle); //ovìøí, jestli pixel leí v trojúhelníku
-                    if Inside= false then Dec(w)  //pokud neleí smau poslední vrchol
-                    else                    //pokud pixel leí v trojúhelníku spoète jeho interpolaèní hodnotu
+                    Inside :=CheckPixel(I,J,Triangle); //ovÃ¬Ã¸Ã­, jestli pixel leÅ¾Ã­ v trojÃºhelnÃ­ku
+                    if Inside= false then Dec(w)  //pokud neleÅ¾Ã­ smaÅ¾u poslednÃ­ vrchol
+                    else                    //pokud pixel leÅ¾Ã­ v trojÃºhelnÃ­ku spoÃ¨te jeho interpolaÃ¨nÃ­ hodnotu
                     begin
                       Inside:=Interpolation(I,J,width,w,Triangle);
                       break;
                     end;
                   end;
-                end;//konec bloku na zjišování, zda bod leí v listu vrcholù triangulaèní sítì
+                end;//konec bloku na zjiÅ¡ÂovÃ¡nÃ­, zda bod leÅ¾Ã­ v listu vrcholÃ¹ triangulaÃ¨nÃ­ sÃ­tÃ¬
               end;
-              end;//konec bloku, zda pixel leí v obraze
-            end; //konec procházení øádku
+              end;//konec bloku, zda pixel leÅ¾Ã­ v obraze
+            end; //konec prochÃ¡zenÃ­ Ã¸Ã¡dku
             if Inside = true then break;
-            for G2:=0 to (t-1) do //Projede horní øádek
+            for G2:=0 to (t-1) do //Projede hornÃ­ Ã¸Ã¡dek
             begin
-              if (I-K>=0) and (I-K<=height-1) and (J-K+G2<=width-1) and (J-K+G2>=0) then//zjistí, jestli danı pixel leí v obraze
+              if (I-K>=0) and (I-K<=height-1) and (J-K+G2<=width-1) and (J-K+G2>=0) then//zjistÃ­, jestli danÃ½ pixel leÅ¾Ã­ v obraze
               begin
               if (AGDicvertex[0].ContainsKey((I-K)*width+J-K+G2)=true) and (CheckFakeVertex(LFakeVertex,I,J,-K,-K+G2)=false) then
               begin
@@ -1508,9 +1508,9 @@ begin
                 begin
                   AGDicvertex[0].TryGetValue((I-K)*width+J-K+G2,PVertex);
                   NewPixel(PVertex,Triangle[w]);
-                  if w = 1 then // pokud jsme našli dva nejbliší uzly, ovìøíme, jestli náš bod, pro kterı poèítáme interpolaci leí na úseèce mezi tìmito body
+                  if w = 1 then // pokud jsme naÅ¡li dva nejbliÅ¾Å¡Ã­ uzly, ovÃ¬Ã¸Ã­me, jestli nÃ¡Å¡ bod, pro kterÃ½ poÃ¨Ã­tÃ¡me interpolaci leÅ¾Ã­ na ÃºseÃ¨ce mezi tÃ¬mito body
                   begin
-                   if Det2(J,I,Triangle[0]^.J,Triangle[0]^.I,Triangle[1]^.J,Triangle[1]^.I) then // ovìøíme, jestli bod leí na pøímce dané jeho dvìma nejblišími body
+                   if Det2(J,I,Triangle[0]^.J,Triangle[0]^.I,Triangle[1]^.J,Triangle[1]^.I) then // ovÃ¬Ã¸Ã­me, jestli bod leÅ¾Ã­ na pÃ¸Ã­mce danÃ© jeho dvÃ¬ma nejbliÅ¾Å¡Ã­mi body
                    begin
                       Inside:=Interpolation(I,J,width,w,Triangle);
                       break;
@@ -1518,11 +1518,11 @@ begin
                    K2:=K; t2:=t;
                   end;
                   inc(w);
-                  if w = 3 then  //pokud w =3, pak jsme našli 3 nejbliší body a musíme dále ovìøit, jestli náš pixel, leí uvnitø trojúhelníku tvoøeného tìmito body
+                  if w = 3 then  //pokud w =3, pak jsme naÅ¡li 3 nejbliÅ¾Å¡Ã­ body a musÃ­me dÃ¡le ovÃ¬Ã¸it, jestli nÃ¡Å¡ pixel, leÅ¾Ã­ uvnitÃ¸ trojÃºhelnÃ­ku tvoÃ¸enÃ©ho tÃ¬mito body
                   begin
-                    Inside :=CheckPixel(I,J,Triangle); //ovìøí, jestli pixel leí v trojúhelníku
-                    if Inside= false then Dec(w)  //pokud neleí smau poslední vrchol
-                    else                    //pokud pixel leí v trojúhelníku spoète jeho interpolaèní hodnotu
+                    Inside :=CheckPixel(I,J,Triangle); //ovÃ¬Ã¸Ã­, jestli pixel leÅ¾Ã­ v trojÃºhelnÃ­ku
+                    if Inside= false then Dec(w)  //pokud neleÅ¾Ã­ smaÅ¾u poslednÃ­ vrchol
+                    else                    //pokud pixel leÅ¾Ã­ v trojÃºhelnÃ­ku spoÃ¨te jeho interpolaÃ¨nÃ­ hodnotu
                     begin
                       Inside:=Interpolation(I,J,width,w,Triangle);
                       break;
@@ -1533,9 +1533,9 @@ begin
               end;
             end;
             if Inside = true then break;
-            for G3:=1 to (t-2) do //Projede levı sloupec
+            for G3:=1 to (t-2) do //Projede levÃ½ sloupec
             begin
-              if (I-K+G3>=0) and (I-K+G3<=height-1) and (J-K<=width-1) and (J-K>=0) then//zjistí, jestli danı pixel leí v obraze
+              if (I-K+G3>=0) and (I-K+G3<=height-1) and (J-K<=width-1) and (J-K>=0) then//zjistÃ­, jestli danÃ½ pixel leÅ¾Ã­ v obraze
               begin
                 if (AGDicvertex[0].ContainsKey((I-K+G3)*width+J-K)=true) and (CheckFakeVertex(LFakeVertex,I,J,-K+G3,-K)=false) then
                 begin
@@ -1543,9 +1543,9 @@ begin
                 begin
                   AGDicvertex[0].TryGetValue((I-K+G3)*width+J-K,PVertex);
                   NewPixel(PVertex,Triangle[w]);
-                  if w = 1 then // pokud jsme našli dva nejbliší uzly, ovìøíme, jestli náš bod, pro kterı poèítáme interpolaci leí na úseèce mezi tìmito body
+                  if w = 1 then // pokud jsme naÅ¡li dva nejbliÅ¾Å¡Ã­ uzly, ovÃ¬Ã¸Ã­me, jestli nÃ¡Å¡ bod, pro kterÃ½ poÃ¨Ã­tÃ¡me interpolaci leÅ¾Ã­ na ÃºseÃ¨ce mezi tÃ¬mito body
                   begin
-                   if Det2(J,I,Triangle[0]^.J,Triangle[0]^.I,Triangle[1]^.J,Triangle[1]^.I) then // ovìøíme, jestli bod leí na pøímce dané jeho dvìma nejblišími body
+                   if Det2(J,I,Triangle[0]^.J,Triangle[0]^.I,Triangle[1]^.J,Triangle[1]^.I) then // ovÃ¬Ã¸Ã­me, jestli bod leÅ¾Ã­ na pÃ¸Ã­mce danÃ© jeho dvÃ¬ma nejbliÅ¾Å¡Ã­mi body
                    begin
                     Inside:=Interpolation(I,J,width,w,Triangle);
                     break;
@@ -1553,11 +1553,11 @@ begin
                    K2:=K; t2:=t;
                   end;
                   inc(w);
-                  if w = 3 then  //pokud w =3, pak jsme našli 3 nejbliší body a musíme dále ovìøit, jestli náš pixel, leí uvnitø trojúhelníku tvoøeného tìmito body
+                  if w = 3 then  //pokud w =3, pak jsme naÅ¡li 3 nejbliÅ¾Å¡Ã­ body a musÃ­me dÃ¡le ovÃ¬Ã¸it, jestli nÃ¡Å¡ pixel, leÅ¾Ã­ uvnitÃ¸ trojÃºhelnÃ­ku tvoÃ¸enÃ©ho tÃ¬mito body
                   begin
-                    Inside :=CheckPixel(I,J,Triangle); //ovìøí, jestli pixel leí v trojúhelníku
-                    if Inside= false then Dec(w)  //pokud neleí smau poslední vrchol
-                    else                    //pokud pixel leí v trojúhelníku spoète jeho interpolaèní hodnotu
+                    Inside :=CheckPixel(I,J,Triangle); //ovÃ¬Ã¸Ã­, jestli pixel leÅ¾Ã­ v trojÃºhelnÃ­ku
+                    if Inside= false then Dec(w)  //pokud neleÅ¾Ã­ smaÅ¾u poslednÃ­ vrchol
+                    else                    //pokud pixel leÅ¾Ã­ v trojÃºhelnÃ­ku spoÃ¨te jeho interpolaÃ¨nÃ­ hodnotu
                     begin
                       Inside:=Interpolation(I,J,width,w,Triangle);
                       break;
@@ -1568,9 +1568,9 @@ begin
               end;
             end;
             if Inside = true then break;
-            for G4:=1 to (t-2) do //Projede pravı sloupec
+            for G4:=1 to (t-2) do //Projede pravÃ½ sloupec
             begin
-              if (I-K+G4>=0) and (I-K+G4<=height-1) and (J+K<=width-1) and (J+K>=0) then//zjistí, jestli danı pixel leí v obraze
+              if (I-K+G4>=0) and (I-K+G4<=height-1) and (J+K<=width-1) and (J+K>=0) then//zjistÃ­, jestli danÃ½ pixel leÅ¾Ã­ v obraze
               begin
                 if (AGDicvertex[0].ContainsKey((I-K+G4)*width+J+K)=true) and (CheckFakeVertex(LFakeVertex,I,J,-K+G4,K)=false) then
                 begin
@@ -1578,9 +1578,9 @@ begin
                 begin
                   AGDicvertex[0].TryGetValue((I-K+G4)*width+J+K,PVertex);
                   NewPixel(PVertex,Triangle[w]);
-                  if w = 1 then // pokud jsme našli dva nejbliší uzly, ovìøíme, jestli náš bod, pro kterı poèítáme interpolaci leí na úseèce mezi tìmito body
+                  if w = 1 then // pokud jsme naÅ¡li dva nejbliÅ¾Å¡Ã­ uzly, ovÃ¬Ã¸Ã­me, jestli nÃ¡Å¡ bod, pro kterÃ½ poÃ¨Ã­tÃ¡me interpolaci leÅ¾Ã­ na ÃºseÃ¨ce mezi tÃ¬mito body
                   begin
-                   if Det2(J,I,Triangle[0]^.J,Triangle[0]^.I,Triangle[1]^.J,Triangle[1]^.I) then // ovìøíme, jestli bod leí na pøímce dané jeho dvìma nejblišími body
+                   if Det2(J,I,Triangle[0]^.J,Triangle[0]^.I,Triangle[1]^.J,Triangle[1]^.I) then // ovÃ¬Ã¸Ã­me, jestli bod leÅ¾Ã­ na pÃ¸Ã­mce danÃ© jeho dvÃ¬ma nejbliÅ¾Å¡Ã­mi body
                    begin
                     Inside:=Interpolation(I,J,width,w,Triangle);
                     break;
@@ -1588,11 +1588,11 @@ begin
                    K2:=K; t2:=t;
                   end;
                   inc(w);
-                  if w = 3 then  //pokud w =3, pak jsme našli 3 nejbliší body a musíme dále ovìøit, jestli náš pixel, leí uvnitø trojúhelníku tvoøeného tìmito body
+                  if w = 3 then  //pokud w =3, pak jsme naÅ¡li 3 nejbliÅ¾Å¡Ã­ body a musÃ­me dÃ¡le ovÃ¬Ã¸it, jestli nÃ¡Å¡ pixel, leÅ¾Ã­ uvnitÃ¸ trojÃºhelnÃ­ku tvoÃ¸enÃ©ho tÃ¬mito body
                   begin
-                    Inside :=CheckPixel(I,J,Triangle); //ovìøí, jestli pixel leí v trojúhelníku
-                    if Inside= false then Dec(w)  //pokud neleí smau poslední vrchol
-                    else                    //pokud pixel leí v trojúhelníku spoète jeho interpolaèní hodnotu
+                    Inside :=CheckPixel(I,J,Triangle); //ovÃ¬Ã¸Ã­, jestli pixel leÅ¾Ã­ v trojÃºhelnÃ­ku
+                    if Inside= false then Dec(w)  //pokud neleÅ¾Ã­ smaÅ¾u poslednÃ­ vrchol
+                    else                    //pokud pixel leÅ¾Ã­ v trojÃºhelnÃ­ku spoÃ¨te jeho interpolaÃ¨nÃ­ hodnotu
                     begin
                       Inside:=Interpolation(I,J,width,w,Triangle);
                       break;
@@ -1603,10 +1603,10 @@ begin
               end;
             end;
             if Inside = true then break;
-          end;//konec K cyklu, cyklus na prohledávání okolí
+          end;//konec K cyklu, cyklus na prohledÃ¡vÃ¡nÃ­ okolÃ­
       end;
-    for c:=0 to (LFakeVertex.Count-1) do Dispose(LFakeVertex.Items[C]);  //smae pointery na nevhodné vrcholy pro aktuální pixel
-    LFakeVertex.Free;      //smae list nevhodnıch pixelù
+    for c:=0 to (LFakeVertex.Count-1) do Dispose(LFakeVertex.Items[C]);  //smaÅ¾e pointery na nevhodnÃ© vrcholy pro aktuÃ¡lnÃ­ pixel
+    LFakeVertex.Free;      //smaÅ¾e list nevhodnÃ½ch pixelÃ¹
     end; //Konec J cyklu
   end; //Konec I cyklu
   Dispose(A); Dispose(A2);Dispose(A3);
@@ -1630,7 +1630,7 @@ begin
       Up:=false;
     end;
   end;
-  for b := 0 to Gn-1 do           //UVOLNÌNÍ PAMÌTI ALOKOVANÉ NA SLOVNÍKY VRCHOLÙ INTERPOLAÈNÍ SÍTÌ
+  for b := 0 to Gn-1 do           //UVOLNÃŒNÃ PAMÃŒTI ALOKOVANÃ‰ NA SLOVNÃKY VRCHOLÃ™ INTERPOLAÃˆNÃ SÃTÃŒ
   begin
     AGDicvertex[b].Clear; //AGDicvertex[b].Free;
     AGDicvertex[b].Destroy;
@@ -1650,7 +1650,7 @@ begin
   ProgressBar1.Position := 0;
   SetLength(GPointsKor,0);
   Setlength(AGDicVertex,0);
-  showmessage('Interpolace dat dokonèena.');
+  showmessage('Interpolace dat dokonÃ¨ena.');
  // ReportMemoryLeaksOnShutdown := True;
 end;
 
@@ -1665,11 +1665,11 @@ var I,b:integer;
     ArPruJ,ArPruI,ArPruN,RozptylJ,RozptylI,SmerOdI,SmerOdJ:array of extended;
 begin
   Posuvy.Enabled:=false; MeritkoMapyPosuvu.enabled:=true;
-  //Vypíše statistické vyhodnocení posuvù pro jednotlivé obrázky
-  AssignFile(statFile,ExtractFilePath(ParamStr(0))+GNameOfFolder+'\'+'StatistickéVyhodnocení.txt');
+  //VypÃ­Å¡e statistickÃ© vyhodnocenÃ­ posuvÃ¹ pro jednotlivÃ© obrÃ¡zky
+  AssignFile(statFile,ExtractFilePath(ParamStr(0))+GNameOfFolder+'\'+'StatistickÃ©VyhodnocenÃ­.txt');
   ReWrite(statFile);
-  CreateDir(ExtractFilePath(ParamStr(0))+'\'+GNameOfFolder+'\'+'MapyPosuvù');
-  WriteLn(statFile,';Ar. prùmìr posuvù ve vodorovném smìru;Ar. prùmìr posuvù ve svislém smìru;'+'Ar. prùmìr normy posuvù;Rozptyl posuvù ve vodorovném smìru;Rozptyl posuvù ve svislém smìru;Smìrodatná odchylka posuvù ve vodorovném smìru;Smìrodatná odchylka posuvù ve svislém smìru;Nejvìtší posuv ve smyslu normy');
+  CreateDir(ExtractFilePath(ParamStr(0))+'\'+GNameOfFolder+'\'+'MapyPosuvÃ¹');
+  WriteLn(statFile,';Ar. prÃ¹mÃ¬r posuvÃ¹ ve vodorovnÃ©m smÃ¬ru;Ar. prÃ¹mÃ¬r posuvÃ¹ ve svislÃ©m smÃ¬ru;'+'Ar. prÃ¹mÃ¬r normy posuvÃ¹;Rozptyl posuvÃ¹ ve vodorovnÃ©m smÃ¬ru;Rozptyl posuvÃ¹ ve svislÃ©m smÃ¬ru;SmÃ¬rodatnÃ¡ odchylka posuvÃ¹ ve vodorovnÃ©m smÃ¬ru;SmÃ¬rodatnÃ¡ odchylka posuvÃ¹ ve svislÃ©m smÃ¬ru;NejvÃ¬tÅ¡Ã­ posuv ve smyslu normy');
   SetLength(MaxJas,Gn); SetLength(ArPruJ,Gn); SetLength(ArPruI,Gn);SetLength(ArPruN,Gn); SetLength(RozptylJ,Gn); SetLength(RozptylI,Gn); SetLength(SmerOdI,Gn); SetLength(SmerOdJ,Gn);
   ProgressBar1.Min := 0;
   ProgressBar1.Max :=Gn ;
@@ -1681,7 +1681,7 @@ begin
     ProgressBar1.Update;
     Data:=TList.Create;
     MaxJas[b]:=0; ArPruI[b]:=0; ArpruJ[b]:=0;ArpruN[b]:=0; RozptylI[b]:=0; RozptylJ[b]:=0;
-    for I := 0 to GLPixelData[b].Count-1 do  //Najdeme maximální jas (normu vektoru posuvu) v b. obrázku
+    for I := 0 to GLPixelData[b].Count-1 do  //Najdeme maximÃ¡lnÃ­ jas (normu vektoru posuvu) v b. obrÃ¡zku
     begin
       PPixel:=GLPixelData[b].Items[I];
       ArPruI[b]:= ArPruI[b]+PPixel.PosunI;
@@ -1698,27 +1698,27 @@ begin
       PPixel:=GLPixelData[b].Items[I];
       RozptylJ[b]:=RozptylJ[b]+sqr(PPixel.PosunJ-ArPruJ[b]);
       RozptylI[b]:=RozptylI[b]+sqr(PPixel.PosunI-ArPruI[b]);
-      ar:=arg(PPixel.PosunJ,PPixel.PosunI);   //Posun J = posun ve smìru reálné osy, Posun I = posun ve smìru imaginární osy, spoète úhel od reálné osy
-      Data.Add(MoveVector(ar,MaxJas[b],sqrt(PPixel.PosunI*PPixel.PosunI+PPixel.PosunJ*PPixel.PosunJ)));  //Nahraje RGB barvy, jimi si má vykreslit pøíslušnı pixel do listu dat
+      ar:=arg(PPixel.PosunJ,PPixel.PosunI);   //Posun J = posun ve smÃ¬ru reÃ¡lnÃ© osy, Posun I = posun ve smÃ¬ru imaginÃ¡rnÃ­ osy, spoÃ¨te Ãºhel od reÃ¡lnÃ© osy
+      Data.Add(MoveVector(ar,MaxJas[b],sqrt(PPixel.PosunI*PPixel.PosunI+PPixel.PosunJ*PPixel.PosunJ)));  //Nahraje RGB barvy, jimiÅ¾ si mÃ¡ vykreslit pÃ¸Ã­sluÅ¡nÃ½ pixel do listu dat
     end;
     RozptylJ[b]:=RozptylJ[b]/(GLPixelData[b].Count);
     RozptylI[b]:=RozptylI[b]/(GLPixelData[b].Count);
     SmerOdJ[b]:=sqrt(RozptylJ[b]);
     SmerOdI[b]:=sqrt(RozptylI[b]);
-    str:=GArrayOfNames[b];//extractfilename(FileListBox1.Items[b]);  //extrahuje název
-    SetLength(str, Length(str) - 4);   //odstraní koncovku .tif
-    BitmapPosuvy(GWidth,GHeight,Data,'MapaPosuvu'+str);//Vykreslí a uloí posuvy
-    for I := 0 to GLPixelData[0].Count-1 do dispose(Data.Items[I]); //smae pamì vyhrazenou pro posuvy
+    str:=GArrayOfNames[b];//extractfilename(FileListBox1.Items[b]);  //extrahuje nÃ¡zev
+    SetLength(str, Length(str) - 4);   //odstranÃ­ koncovku .tif
+    BitmapPosuvy(GWidth,GHeight,Data,'MapaPosuvu'+str);//VykreslÃ­ a uloÅ¾Ã­ posuvy
+    for I := 0 to GLPixelData[0].Count-1 do dispose(Data.Items[I]); //smaÅ¾e pamÃ¬Â vyhrazenou pro posuvy
     Data.free;
     WriteLn(statFile,GArrayOfNames[b]+';'+floattostr(ArPruJ[b])+';'+floattostr(ArPruI[b])+';'+floattostr(ArPruN[b])+';'+floattostr(RozptylJ[b])+';'+floattostr(RozptylI[b])+';'+floattostr(SmerOdJ[b])+';'+floattostr(SmerOdI[b])+';'+floattostr(MaxJas[b]));
   end;
   CloseFile(statFile);
-  //Vypíše statistická data do stringridu
+  //VypÃ­Å¡e statistickÃ¡ data do stringridu
   StringGrid1.ColCount:=9;StringGrid1.RowCount:=Gn+1;
-  StringGrid1.Cells[1,0]:='Ar. prùmìr posuvù ve vodorovném smìru';StringGrid1.Cells[2,0]:='Ar. prùmìr posuvù ve svislém smìru'; StringGrid1.Cells[3,0]:='Ar. prùmìr normy posuvù';
-  StringGrid1.Cells[4,0]:='Rozptyl posuvù ve vodorovném smìru';StringGrid1.Cells[5,0]:='Rozptyl posuvù ve svislém smìru';
-  StringGrid1.Cells[6,0]:='Smìrodatná odchylka posuvù ve vodorovném smìru';StringGrid1.Cells[7,0]:='Smìrodatná odchylka posuvù ve svislém smìru';
-  StringGrid1.Cells[8,0]:='Nejvìtší posuv ve smyslu normy';
+  StringGrid1.Cells[1,0]:='Ar. prÃ¹mÃ¬r posuvÃ¹ ve vodorovnÃ©m smÃ¬ru';StringGrid1.Cells[2,0]:='Ar. prÃ¹mÃ¬r posuvÃ¹ ve svislÃ©m smÃ¬ru'; StringGrid1.Cells[3,0]:='Ar. prÃ¹mÃ¬r normy posuvÃ¹';
+  StringGrid1.Cells[4,0]:='Rozptyl posuvÃ¹ ve vodorovnÃ©m smÃ¬ru';StringGrid1.Cells[5,0]:='Rozptyl posuvÃ¹ ve svislÃ©m smÃ¬ru';
+  StringGrid1.Cells[6,0]:='SmÃ¬rodatnÃ¡ odchylka posuvÃ¹ ve vodorovnÃ©m smÃ¬ru';StringGrid1.Cells[7,0]:='SmÃ¬rodatnÃ¡ odchylka posuvÃ¹ ve svislÃ©m smÃ¬ru';
+  StringGrid1.Cells[8,0]:='NejvÃ¬tÅ¡Ã­ posuv ve smyslu normy';
   for I := 0 to Gn-1  do
   begin
     StringGrid1.Cells[0,I+1]:=GArrayOfNames[I]; StringGrid1.Cells[1,I+1]:=floattostr(ArPruJ[I]);
@@ -1747,7 +1747,7 @@ var I,J,width,height,size,max,b,K,prumer,Sum:integer;
     Grad:PSingleArray;
 begin
   BilinearniInterpolace.enabled:=false;
-  CreateDir(ExtractFilePath(ParamStr(0))+'\'+GNameOfFolder+'\'+'UpravenáData');
+  CreateDir(ExtractFilePath(ParamStr(0))+'\'+GNameOfFolder+'\'+'UpravenÃ¡Data');
   width:=Gwidth; height:=Gheight; size:=GSize;
   SetLength(B2,Gn);
   for b := 0 to Gn-1 do
@@ -1763,15 +1763,15 @@ begin
       end;
     end;
     str:=GArrayOfNames[b];//extractfilename(FileListBox1.Items[b]);
-    SetLength(str, Length(str) - 4);   //odstraní koncovku .tif
+    SetLength(str, Length(str) - 4);   //odstranÃ­ koncovku .tif
     NewBitmapUprData(width,height,max,Data,'UpravenyObraz'+str);
-    Move(Data^,B2[b]^,Size);//Zkopíruje originální data do nového pole B2[q]^
-    for I:=0 to (GLPixelData[b].Count-1) do Dispose(GLPixelData[b].Items[I]);   //smae jdnotlivé pointery
-    GLPixelData[b].Free;  //smae list vrcholù trojúhelníkové sítì
-    FreeMem(Data);//Uvolní pointer Data
+    Move(Data^,B2[b]^,Size);//ZkopÃ­ruje originÃ¡lnÃ­ data do novÃ©ho pole B2[q]^
+    for I:=0 to (GLPixelData[b].Count-1) do Dispose(GLPixelData[b].Items[I]);   //smaÅ¾e jdnotlivÃ© pointery
+    GLPixelData[b].Free;  //smaÅ¾e list vrcholÃ¹ trojÃºhelnÃ­kovÃ© sÃ­tÃ¬
+    FreeMem(Data);//UvolnÃ­ pointer Data
   end;
   SetLength(GLPixelData,0);
-  MaxJasPrumer:=0;                      //MaxJ = Maximální jas pixelu ve zprùmìrovaném obraze hran
+  MaxJasPrumer:=0;                      //MaxJ = MaximÃ¡lnÃ­ jas pixelu ve zprÃ¹mÃ¬rovanÃ©m obraze hran
   for I:=0 to (height-1) do
   begin
     for J:=0 to (width-1) do
@@ -1781,16 +1781,16 @@ begin
         begin
           prumer:=prumer+B2[K]^[I*width+J];
         end;
-      GPruObraz[I*width+J]:=round((prumer/Gn)); // prùmìrnı jas pixelu [I*width+J] ve zprùmìrovaném obraze
-      if(GPruObraz[I*width+J]>MaxJasPrumer) then MaxJasPrumer:=GPruObraz[I*width+J]; //Zjistí maximální jas pixelu ve zprùmìrovaném obraze
+      GPruObraz[I*width+J]:=round((prumer/Gn)); // prÃ¹mÃ¬rnÃ½ jas pixelu [I*width+J] ve zprÃ¹mÃ¬rovanÃ©m obraze
+      if(GPruObraz[I*width+J]>MaxJasPrumer) then MaxJasPrumer:=GPruObraz[I*width+J]; //ZjistÃ­ maximÃ¡lnÃ­ jas pixelu ve zprÃ¹mÃ¬rovanÃ©m obraze
     end;
   end;
   NewBitmap(width,height,MaxJasPrumer,GPruObraz,'ZprumerovanyObrazUpraveny');
-  //ZAOSTØENÍ ZPRÙMÌROVANÉHO OBRAZU
+  //ZAOSTÃ˜ENÃ ZPRÃ™MÃŒROVANÃ‰HO OBRAZU
   GetMem(GPruObrazOstr,GSize);
   dimM:=3;
-  SetLength(M, dimM);         //nastaví poèet øádkù masky (matice)
-  for I := 0 to Length(M)-1 do SetLength(M[I], dimM);//kadı øádek má stejnı poèet sloupcù, jako má matice M poèet øádkù (vytvoøíme ètvercovou matici)
+  SetLength(M, dimM);         //nastavÃ­ poÃ¨et Ã¸Ã¡dkÃ¹ masky (matice)
+  for I := 0 to Length(M)-1 do SetLength(M[I], dimM);//kaÅ¾dÃ½ Ã¸Ã¡dek mÃ¡ stejnÃ½ poÃ¨et sloupcÃ¹, jako mÃ¡ matice M poÃ¨et Ã¸Ã¡dkÃ¹ (vytvoÃ¸Ã­me Ã¨tvercovou matici)
   M[0,0]:=-1; M[0,1]:=-1; M[0,2]:=-1;
   M[1,0]:=-1; M[1,1]:=9; M[1,2]:=-1;
   M[2,0]:=-1; M[2,1]:=-1; M[2,2]:=-1;
@@ -1809,22 +1809,22 @@ begin
       GPruObrazOstr[I*width+J]:=Sum;
     end;
   end;
-  MaxJasPrumer:=0;                      //MaxJ = Maximální jas pixelu ve zprùmìrovaném obraze hran
+  MaxJasPrumer:=0;                      //MaxJ = MaximÃ¡lnÃ­ jas pixelu ve zprÃ¹mÃ¬rovanÃ©m obraze hran
   for I:=0 to (height-1) do
   begin
     for J:=0 to (width-1) do
     begin
       if (I=0) or (I=height-1) or (J=0) or (J=width-1) then GPruObrazOstr[I*width+J]:=GPruObraz[I*width+J];
-      if(GPruObrazOstr[I*width+J]>MaxJasPrumer) then MaxJasPrumer:=GPruObrazOstr[I*width+J]; //Zjistí maximální jas pixelu ve zprùmìrovaném obraze
+      if(GPruObrazOstr[I*width+J]>MaxJasPrumer) then MaxJasPrumer:=GPruObrazOstr[I*width+J]; //ZjistÃ­ maximÃ¡lnÃ­ jas pixelu ve zprÃ¹mÃ¬rovanÃ©m obraze
     end;
   end;
   NewBitmap(width,height,MaxJasPrumer,GPruObrazOstr,'ZprumerovanyObrazUpravenyZaostreny');
-  //Vytvoøení obrazu hran ze zprumerovaneho upraveneho obrazu
+  //VytvoÃ¸enÃ­ obrazu hran ze zprumerovaneho upraveneho obrazu
   GetMem(Grad, width*height*4);
-  MaxJasHrany:=Gradient(height,width,Size,GPruObrazOstr,Grad); // Ze zprùmìrovaného obrazu v GPruObraz se napoèítají hrany a ty jsou pak uloeny do Grad
-  NewBitmap(width,height,MaxJasHrany,Grad,'Hrany_ZprumerovanyObrazUpravenyZaostreny');   //Uloí data v Grad jako bmp
+  MaxJasHrany:=Gradient(height,width,Size,GPruObrazOstr,Grad); // Ze zprÃ¹mÃ¬rovanÃ©ho obrazu v GPruObraz se napoÃ¨Ã­tajÃ­ hrany a ty jsou pak uloÅ¾eny do Grad
+  NewBitmap(width,height,MaxJasHrany,Grad,'Hrany_ZprumerovanyObrazUpravenyZaostreny');   //UloÅ¾Ã­ data v Grad jako bmp
   FreeMem(Grad);
-   //Uvolnìní pamìti
+   //UvolnÃ¬nÃ­ pamÃ¬ti
   for I := 0 to Length(M)-1 do SetLength(M[I], 0);
   SetLength(M,0);
   FreeMem(GPruObraz,GSize); FreeMem(GPruObrazOstr);
@@ -1836,7 +1836,7 @@ begin
   GArrayOfNames:=nil; Setlength(GArrayOfNames,0);
   stringgrid1.RowCount:=0; Stringgrid1.ColCount:=0;
   Stringgrid1.Free;
-  Showmessage('Bilineární interpolace dokonèena.');
+  Showmessage('BilineÃ¡rnÃ­ interpolace dokonÃ¨ena.');
   //ReportMemoryLeaksOnShutdown := True;
   //restartuje program
   ShellExecute(Handle, nil, PChar(Application.ExeName), nil, nil, SW_SHOWNORMAL);
@@ -1855,16 +1855,16 @@ var arg,x:integer;
     Popis:textFile;
 begin
   MeritkoMapyPosuvu.enabled:=false; BilinearniInterpolace.Enabled:=true;
-  AssignFile(Popis,ExtractFilePath(ParamStr(0))+GNameOfFolder+'\'+'MapyPosuvù'+'\'+'PopisMìøítkaPosuvù.txt');
+  AssignFile(Popis,ExtractFilePath(ParamStr(0))+GNameOfFolder+'\'+'MapyPosuvÃ¹'+'\'+'PopisMÃ¬Ã¸Ã­tkaPosuvÃ¹.txt');
   ReWrite(Popis);
-  WriteLn(Popis,'                 Popsání mìøítka');
-  WriteLn(Popis,'Poèátek je umístìn v levém dolním rohu obrázku.');
-  WriteLn(Popis,'Vodorovná osa je orientovaná zleva doprava, pøièem maximální hodnota na této ose je rovna 255.');
-  WriteLn(Popis,'Hodnoty na této ose znázoròují jas pixelu. Platí, e nejjasnìjší pixely jsou ty, které dosahují maximální hodnotu posunutí ve smyslu normy vektoru.');
-  WriteLn(Popis,'Svislá osa je orientována od poèátku smìrem vzhùru, pøièem maximální hodnota je rovna 359.');
-  WriteLn(Popis,'Hodnoty na této ose znázoròují úhel posunutí daného pixelu.');
-  WriteLn(Popis,'Pomocí hodnoty na svislé ose a hodnoty na vodorovné ose, tedy lze urèit posunutí daného pixelu.');
-  WriteLn(Popis,'Maximální hodnotu posuvu nalezneme v souboru StatistickéVyhodnocení.txt.');
+  WriteLn(Popis,'                 PopsÃ¡nÃ­ mÃ¬Ã¸Ã­tka');
+  WriteLn(Popis,'PoÃ¨Ã¡tek je umÃ­stÃ¬n v levÃ©m dolnÃ­m rohu obrÃ¡zku.');
+  WriteLn(Popis,'VodorovnÃ¡ osa je orientovanÃ¡ zleva doprava, pÃ¸iÃ¨emÅ¾ maximÃ¡lnÃ­ hodnota na tÃ©to ose je rovna 255.');
+  WriteLn(Popis,'Hodnoty na tÃ©to ose znÃ¡zorÃ²ujÃ­ jas pixelu. PlatÃ­, Å¾e nejjasnÃ¬jÅ¡Ã­ pixely jsou ty, kterÃ© dosahujÃ­ maximÃ¡lnÃ­ hodnotu posunutÃ­ ve smyslu normy vektoru.');
+  WriteLn(Popis,'SvislÃ¡ osa je orientovÃ¡na od poÃ¨Ã¡tku smÃ¬rem vzhÃ¹ru, pÃ¸iÃ¨emÅ¾ maximÃ¡lnÃ­ hodnota je rovna 359.');
+  WriteLn(Popis,'Hodnoty na tÃ©to ose znÃ¡zorÃ²ujÃ­ Ãºhel posunutÃ­ danÃ©ho pixelu.');
+  WriteLn(Popis,'PomocÃ­ hodnoty na svislÃ© ose a hodnoty na vodorovnÃ© ose, tedy lze urÃ¨it posunutÃ­ danÃ©ho pixelu.');
+  WriteLn(Popis,'MaximÃ¡lnÃ­ hodnotu posuvu nalezneme v souboru StatistickÃ©VyhodnocenÃ­.txt.');
   CloseFile(Popis);
   Bitmap:=CreateBmp(256,360,24);
   for arg := 0 to 359 do
@@ -1872,26 +1872,26 @@ begin
     Pixels:=Bitmap.ScanLine[359-arg];
     for x := 0 to 255 do
     begin
-      //R sloka
+      //R sloÅ¾ka
       if (arg<=60) or (arg>=300) then Pixels[x].rgbtRed:=round(x)
       else if (arg>60) and (arg<120) then Pixels[x].rgbtRed:=round(-(x/60)*arg+2*x)
       else if (arg>240) and (arg<300) then Pixels[x].rgbtRed:=round((x/60)*arg-4*x)
       else Pixels[x].rgbtRed:=0;
-      //G sloka
+      //G sloÅ¾ka
       if (arg>=0) and (arg<60) then Pixels[x].rgbtGreen:=round((x/60)*arg)
       else if (arg>180) and (arg<240) then Pixels[x].rgbtGreen:=round(-(x/60)*arg+4*x)
       else if (arg>=60) and (arg<=180) then Pixels[x].rgbtGreen:=round(x)
       else Pixels[x].rgbtGreen:=0;
-      //B sloka
+      //B sloÅ¾ka
       if (arg>120) and (arg<180) then Pixels[x].rgbtBlue:=round((x/60)*arg-2*x)
       else if (arg>300) and (arg<=359) then Pixels[x].rgbtBlue:=round(-(x/60)*arg+6*x)
       else if (arg>=180) and (arg<=300) then Pixels[x].rgbtBlue:=round(x)
       else Pixels[x].rgbtBlue:=0;
     end;
   end;
-  Bitmap.SaveToFile(ExtractFilePath(ParamStr(0))+GNameOfFolder+'\'+'MapyPosuvù'+'\'+'MeritkoPosuvu'+'.bmp');
+  Bitmap.SaveToFile(ExtractFilePath(ParamStr(0))+GNameOfFolder+'\'+'MapyPosuvÃ¹'+'\'+'MeritkoPosuvu'+'.bmp');
   Bitmap.Free;
-  showmessage('Vykreslení dokonèeno.');
+  showmessage('VykreslenÃ­ dokonÃ¨eno.');
  // ReportMemoryLeaksOnShutdown := True;
 end;
 
@@ -1902,14 +1902,14 @@ var I,J,b:Integer;
     PPixel:GPPointsRecordKor;
 begin
   UlozPosuvy.Enabled:=false;
-  //Vypíše posuvy do txt souboru
+  //VypÃ­Å¡e posuvy do txt souboru
   AssignFile(txtFile,ExtractFilePath(ParamStr(0))+GNameOfFolder+'\'+'Posuv.txt');
   ReWrite(txtFile);
   name:='';Posuv:='';
   for I := 0 to Gn-1 do
   begin
     name:=name+GArrayOfNames[I]+';;';
-    Posuv:=Posuv+'Vodorovnı posuv; Svislı posuv;';
+    Posuv:=Posuv+'VodorovnÃ½ posuv; SvislÃ½ posuv;';
   end;
   WriteLn(txtFile,Name);
   WriteLn(txtFile,Posuv);
@@ -1934,7 +1934,7 @@ begin
     end;
   end;
   CloseFile(txtFile);
-  showmessage('Data byla uloena.');
+  showmessage('Data byla uloÅ¾ena.');
   //ReportMemoryLeaksOnShutdown := True;
 end;
 
@@ -1949,7 +1949,7 @@ begin
   end
   else
   begin
-    ShowMessage('Špatnı vstup. Vstupení parametr musí bıt pøirozené èíslo');
+    ShowMessage('Å patnÃ½ vstup. VstupenÃ­ parametr musÃ­ bÃ½t pÃ¸irozenÃ© Ã¨Ã­slo');
     Krok.Color:=clRed;
   end;
 end;
